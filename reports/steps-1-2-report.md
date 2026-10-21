@@ -336,7 +336,7 @@ the reviewer study became a post-hoc audit; fault injection measures the live pa
 
 | File | Fixes | Real example inside |
 | --- | --- | --- |
-| `vocabulary.md` | the 4 labels, 3 drift indicators, 5 root causes, verdicts, outcomes | kedro `runner → config` (ADDITIONAL, 623 days); `runner → framework.session` (INVERTED); openedx ADR 0002 (MISSING); kedro HEAD: 7 unassigned packages, one 30-module cycle, hubs by fan-in |
+| `vocabulary.md` | the 4 labels, 3 drift indicators, 5 root causes, verdicts, outcomes | kedro `runner → config` (ADDITIONAL, 623 days); `runner → framework.session` (INVERTED); openedx ADR 0002 (MISSING); kedro HEAD: 7 unassigned packages, one 29-module cycle, hubs by fan-in |
 | `rules.schema.yaml` | one compiled rule with provenance | a kedro contract rule; an ADR-derived required rule |
 | `ledger.sql` / `ledger.md` | the deviation ledger, the awareness-gap view | — |
 | `decision-record.schema.json` | the signed record the kernel executes; `applied_commit` | — |
@@ -390,7 +390,8 @@ quietly move the goalposts, and we recorded a fingerprint of each file to prove 
 | "contract since / introduced" | the first first-parent commit whose config has an import-linter section with that contract (kedro 2019-08-13, not the file's 2019-05-16) | `contracts.csv` column `introduced_at` |
 | "the window" | `--since 2023-06-01` for checkov and sqlfluff: replay starts a month before the first contract | `data/<repo>/timings.csv`, `reports/logs/step1-<repo>.log` |
 | "statuses kept / broken / error / package_missing / graph_error" | per commit × contract: rule held / rule broken / the contract names a module that did not exist yet / the package was not in the tree / grimp could not build the graph (e.g. qiskit before its `gateway/` layout) | `checks_sample.parquet` column `status` |
-| "drift indicators on kedro HEAD" | 7 of 12 top-level packages named by no rule (`inspection, ipython, logging, server, utils, validation, __main__`); one 30-module strongly connected component; hubs `framework.project` (16), `utils` (14), `io.core` (14) | `docs/spec/vocabulary.md` § Drift indicators |
+| "the import graph", "the implemented architecture" | grimp's module-level graph of one commit — the thing the contracts are checked on. Not kept by the replay (only its violating edges are); `sarms.graph.extract` writes the whole graph for a commit: `edges.csv` (importer, imported, line number, the import line), `modules.csv` (fan-in/out, package, is_unassigned, cycle id), `packages.csv` + `packages.dot` (package roll-up, drawable with Graphviz), `summary.json` | `data/<repo>/graph/<sha12>/`; kedro HEAD and the 2020 commit 9039f82a are stored |
+| "drift indicators on kedro HEAD" | 7 of 12 top-level packages named by no rule (`inspection, ipython, logging, server, utils, validation, __main__`); one 29-module strongly connected component; hubs `framework.project` (16), `utils` (14), `io.core` (14) | `docs/spec/vocabulary.md` § Drift indicators |
 | "the ADR track", "structural" | ADR files under a decisions folder at HEAD, dated by the commit that added the file; "structural" = ≥ 2 keyword hits | `data/<repo>/adrs.csv`, `reports/adr-track/<repo>.md` |
 | "primaries / reserves / detection-only" | kedro, checkov, wemake, gt4py / sqlfluff, faststream, ramses_rf, qiskit-serverless, airflow, xorq, inspect_evals / PostHog | `docs/repo-selection.md` § Selected |
 | "R1–R5" and "C1–C5" | our reduction rules; the team's criteria numbering | `docs/repo-selection.md`; `data/longlist_decisions.csv` column `rule` |

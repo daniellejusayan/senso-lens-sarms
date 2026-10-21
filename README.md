@@ -14,7 +14,7 @@ Chondamrongkul · team: Danielle Jerick M. Jusayan, Eaindray, Kanthi Phoosorn, W
 src/sarms/mining      first-parent history (Step 1b)            src/sarms/differ      the four labels (Week 2)
 src/sarms/rules       record history now; rule compiler later    src/sarms/ledger      Parquet + DuckDB (Week 2)
 src/sarms/replay      proxy run and baseline (Step 1c)           src/sarms/synthesize  LLM drafting (Week 4)
-src/sarms/graph       grimp / networkx (Week 2)                  src/sarms/verify      gate G0–G8 (Week 4–5)
+src/sarms/graph       import graph of a commit (extract)                  src/sarms/verify      gate G0–G8 (Week 4–5)
                                                                   src/sarms/kernel      executor (Week 5)
 tools/                longlist reduction, screening, 1b+1c runner, samples, spec validation     docs/spec/            the frozen specification (Step 2)
 data/<repo>/          derived, pseudonymised data (Parquet is git-ignored this week)

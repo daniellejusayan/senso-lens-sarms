@@ -14,6 +14,7 @@ uv run python tools/run_step1.py OWNER/REPO --every 1 --since 2023-06-01        
 uv run python tools/run_step1.py OWNER/REPO --config apps/backend/pyproject.toml --src apps/backend   # monorepo
 uv run python tools/run_step1.py OWNER/REPO --skip-proxy                            # ADR track: 1b + record only
 uv run python -m sarms.mining.adr_history data/raw/REPO "$BRANCH" data/REPO OWNER/REPO   # ADR track: dates, titles, structural flag
+uv run python -m sarms.graph.extract data/raw/REPO [--sha SHA]                      # the import graph of one commit -> data/REPO/graph/<sha>/
 uv run python tools/draw_sample.py OWNER/REPO [OWNER/REPO ...]                      # the seeded labelling samples (commit them)
 
 # Step 1b — mine the first-parent history (REPO = name without owner, clone in data/raw/REPO)

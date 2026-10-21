@@ -28,12 +28,12 @@ exceptions are counted apart from unacknowledged violations.
 
 ## Drift indicators — no rule broken
 
-Initial thresholds; calibrated in Week 3 on the subject repositories. Examples computed on 21 Oct 2026 with grimp 3.17 on kedro's default branch (`data/raw/kedro.wt`).
+Initial thresholds; calibrated in Week 3 on the subject repositories. Examples computed on 21 Oct 2026 with grimp 3.17 on kedro's default branch at 738830bb; the full graph is stored by `sarms.graph.extract` under `data/kedro/graph/738830bbf026/` (edges, modules, packages, summary.json).
 
 | Indicator | Definition | Initial threshold | Real example |
 | --- | --- | --- | --- |
 | Unassigned module | a top-level module matched by no layer and no rule | count per commit; any increase is reported | kedro HEAD (21 Oct 2026, grimp): 7 of 12 top-level packages are named by no layer or rule — `inspection`, `ipython`, `logging`, `server`, `utils`, `validation`, `__main__`; the contracts name only `config`, `framework.*`, `io`, `pipeline`, `runner` |
-| New cycle | a strongly connected component of ≥ 2 modules absent at the parent commit (`networkx.strongly_connected_components` on the module graph) | any | kedro HEAD has one SCC of 30 modules spanning `kedro.framework.{cli,context,hooks,project,session,startup}`, `kedro.runner.*`, `kedro.pipeline`, `kedro.validation.*` and `kedro.ipython`; at package level the cycle joins 9 of 12 packages. No rule forbids it, so it is drift, not erosion — and the kind the weekly tick is for. The first commit that closed it is found in Week 2 by walking the replay |
+| New cycle | a strongly connected component of ≥ 2 modules absent at the parent commit (`networkx.strongly_connected_components` on the module graph) | any | kedro HEAD (738830bb) has one SCC of 29 modules spanning `kedro.framework.{cli,context,hooks,project,session,startup}`, `kedro.runner.*`, `kedro.pipeline`, `kedro.validation.*` and `kedro.ipython`; at package level the cycle joins 9 of 12 packages. No rule forbids it, so it is drift, not erosion — and the kind the weekly tick is for. The first commit that closed it is found in Week 2 by walking the replay |
 | Hub fan-in growth | a module whose in-degree grows by ≥ 3 edges and ≥ 20% within a 4-week window | reported on the weekly tick | kedro HEAD hubs by fan-in: `kedro.framework.project` 16, `kedro.utils` 14, `kedro.io.core` 14, `kedro.framework.startup` 12; the growth series comes from the Week 3 per-commit graphs |
 
 ## Root-cause labels — one per deviation (Synthesize, and independently two raters)

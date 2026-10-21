@@ -40,3 +40,18 @@ def test_first_parent_survives_control_characters_in_subjects(tmp_path):
     rows = first_parent(tmp_path, "main")
     assert [r[0] for r in rows] == [0, 1, 2]
     assert rows[1][3].startswith("fix: colo")
+
+
+def test_graph_extract_on_ourselves(tmp_path):
+    """sarms.graph.extract writes edges, modules, packages, dot and summary for a commit."""
+    import json
+    import subprocess
+    import sys
+
+    out = tmp_path / "g"
+    p = subprocess.run([sys.executable, "-m", "sarms.graph.extract", ".", "--sha", "HEAD", "--root", "sarms", "--src", "src", "--out", str(out)],
+                       capture_output=True, text=True)
+    assert p.returncode == 0, p.stderr
+    s = json.loads((out / "summary.json").read_text())
+    assert s["modules"] >= 10 and (out / "edges.csv").exists() and (out / "packages.dot").exists()
+    assert s["hubs_by_fan_in"][0]["module"].startswith("sarms")

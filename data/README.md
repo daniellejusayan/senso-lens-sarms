@@ -13,6 +13,7 @@
 | `<repo>/commits.parquet` | `sarms.mining.first_parent` | **no** (Parquet is ignored) | the first-parent chain: idx, sha, ts, author_ts, author_hash (salted), is_merge, n_files, py_files, msg, pr_number |
 | `<repo>/record/` | `sarms.rules.record_history` | **no** | `importlinter.HEAD.*`, `contracts.csv`, `events.parquet` (contract added/removed/changed, exceptions added/removed) |
 | `<repo>/checks_sample*.parquet`, `violations_sample*.parquet`, `sample*.csv` | `sarms.replay.proxy_lint` | **no** | one row per commit × contract; one row per violating edge |
+| `<repo>/graph/<sha12>/` | `sarms.graph.extract` | **no** | the whole import graph of one commit: `edges.csv/.parquet` (importer, imported, line_number, line_contents, packages), `modules.csv` (in/out degree, package, is_unassigned, scc_id), `packages.csv`, `packages.dot`, `summary.json` (modules, edges, cycles, unassigned, hubs) |
 | `<repo>/episodes*.csv`, `timings.csv` | `sarms.replay.baseline`, `tools/run_step1.py` | **no** | violation episodes (introduced → repaired) and stage timings |
 
 Everything marked **no** is reproduced from the clone by `tools/run_step1.py OWNER/REPO`; the
