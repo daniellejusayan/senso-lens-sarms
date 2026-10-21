@@ -19,7 +19,7 @@ The evaluation in Part 7.3 is a set of queries over this table. DDL: `docs/spec/
 | detected_at | TIMESTAMPTZ | when the system reported it (equals introduced_at in replay) |
 | repaired_at | TIMESTAMPTZ | first later commit without it; NULL while open |
 | root_cause | VARCHAR | one of the five root-cause labels, NULL until Synthesize runs |
-| outcome | VARCHAR | none, suggested, accepted, edited, declined, escalated |
+| outcome | VARCHAR | none, applied, left_standing, amended_by_human, reverted, escalated (point 7: the system applies; humans audit afterwards) |
 | decision_id | VARCHAR | `.rms/decisions/<sha>.json` that decided it |
 
 Example queries:

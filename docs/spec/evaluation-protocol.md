@@ -40,14 +40,21 @@ for repositories that run lint-imports in CI it is nearly always clean (kedro: 1
 - Awareness gap (RQ1): for each repaired deviation, commits and days from introduced_at to
   repaired_at; report median, 90th percentile and the share never repaired. A measurement,
   no target.
-- Verified-suggestion rate (RQ2): among implementation-choice deviations, the share with a
-  draft passing G0–G8; target ≥ 70%. Gate soundness: verified drafts that add a violation or
-  a smell, target 0.
+- Verified-correction rate (RQ2): among implementation-choice deviations, the share with a
+  draft passing G0–G8 and applied; target ≥ 70%. Gate soundness: applied corrections that add
+  a violation or a smell, target 0.
 - Root-cause agreement (RQ3): 50 cases, two raters, Cohen's κ ≥ 0.6; and the share routed to
   the right action (code, record, escalate).
-- Reviewer study (RQ2): 3–6 reviewers, 20 proposals with the evidence pack, items A1–A6 on
-  anchored 1–5 scales plus the binary "would you merge this as-is?"; target ≥ 70%
-  would-accept (4 or 5); report Krippendorff's α and medians.
+- Fault injection (RQ2, live path): each subject is cloned at its current head; 10 synthetic
+  pushes per subject, each breaking exactly one known rule (an import across a layer boundary,
+  a dependency an ADR forbids, a module outside its layer), committed under a test author.
+  The system must detect each, pass G0–G8 and apply the correction with no human action,
+  leaving the test author's commit untouched. Target: 100% corrected or escalated, 0 left
+  standing; the injected set is committed before the run.
+- Post-hoc audit (RQ2): 3–6 architects/maintainers, 20 applied decisions (10 corrections,
+  5 record amendments, 5 escalations) with the evidence pack, items A1–A6 on anchored 1–5
+  scales plus the binary "would you leave this in place as-is?"; target ≥ 70% would-let-stand
+  (4 or 5); report Krippendorff's α and medians. The audit is post hoc: nothing waits for it.
 - Comparison draft: every LLM draft is compared with the rule-based template draft under the
   same gate; report both rates.
 
@@ -63,4 +70,7 @@ written late; repositories with enforced contracts are more disciplined than ave
 
 ## Amendments
 
-(none)
+- 2026-10-21 — Point 7. The design removes the human from the post-push path: `accept` means
+  the kernel applies the correction itself; the reviewer study becomes a post-hoc audit of
+  applied decisions; fault injection on current heads is added to measure the live path.
+  Reason: a suggestion the author must click still sends the developer back to the code.

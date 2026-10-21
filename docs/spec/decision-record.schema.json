@@ -2,14 +2,46 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sarms/decision-record.schema.json",
   "title": "Decision record (.rms/decisions/<sha>.json), spec v0",
-  "description": "What the gate decided about one proposal. The executor accepts nothing else; a gate line without evidence is a fail.",
+  "description": "What the gate decided about one draft. The kernel executes nothing else; a gate line without evidence is a fail; verdict accept is applied without a human in the loop.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sha", "verdict", "class", "gate", "differ_before", "differ_after", "trial_runs", "prompt_hash", "policy_version", "verifier_version", "signature"],
+  "required": [
+    "sha",
+    "verdict",
+    "class",
+    "gate",
+    "differ_before",
+    "differ_after",
+    "trial_runs",
+    "prompt_hash",
+    "policy_version",
+    "verifier_version",
+    "signature"
+  ],
   "properties": {
-    "sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "verdict": {"enum": ["accept", "escalate", "defer", "reject"]},
-    "class": {"type": "string", "examples": ["move_to_layer", "route_through_port", "extract_shared_types", "record_amendment", "decision_record"]},
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "verdict": {
+      "enum": [
+        "accept",
+        "escalate",
+        "defer",
+        "reject"
+      ],
+      "description": "accept = the kernel applies the correction as its own commit, no human click (point 7); escalate = decision record to the architects; defer; reject"
+    },
+    "class": {
+      "type": "string",
+      "examples": [
+        "move_to_layer",
+        "route_through_port",
+        "extract_shared_types",
+        "record_amendment",
+        "decision_record"
+      ]
+    },
     "gate": {
       "type": "array",
       "minItems": 9,
@@ -17,20 +49,77 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["line", "pass", "evidence"],
+        "required": [
+          "line",
+          "pass",
+          "evidence"
+        ],
         "properties": {
-          "line": {"enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"]},
-          "pass": {"type": ["boolean", "null"], "description": "null = not reached because an earlier line failed"},
-          "evidence": {"type": ["object", "null"], "description": "the evidence field(s) named in docs/spec/gate.md for this line"}
+          "line": {
+            "enum": [
+              "G0",
+              "G1",
+              "G2",
+              "G3",
+              "G4",
+              "G5",
+              "G6",
+              "G7",
+              "G8"
+            ]
+          },
+          "pass": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "null = not reached because an earlier line failed"
+          },
+          "evidence": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "the evidence field(s) named in docs/spec/gate.md for this line"
+          }
         }
       }
     },
-    "differ_before": {"type": "string", "description": "path of the SARIF report on the author's commit"},
-    "differ_after": {"type": "string", "description": "path of the SARIF report on the candidate"},
-    "trial_runs": {"type": "array", "items": {"type": "string"}, "description": "CI or local run ids for G3, G4, G8"},
-    "prompt_hash": {"type": "string"},
-    "policy_version": {"type": "string"},
-    "verifier_version": {"type": "string"},
-    "signature": {"type": "string", "description": "HMAC-SHA256 over the canonical JSON of every other field; key held by the kernel only"}
+    "differ_before": {
+      "type": "string",
+      "description": "path of the SARIF report on the author's commit"
+    },
+    "differ_after": {
+      "type": "string",
+      "description": "path of the SARIF report on the candidate"
+    },
+    "trial_runs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "CI or local run ids for G3, G4, G8"
+    },
+    "prompt_hash": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "verifier_version": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "string",
+      "description": "HMAC-SHA256 over the canonical JSON of every other field; key held by the kernel only"
+    },
+    "applied_commit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "sha of the system's own commit when verdict = accept; null otherwise"
+    }
   }
 }

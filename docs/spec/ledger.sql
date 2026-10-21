@@ -16,7 +16,7 @@ CREATE TABLE ledger (
   root_cause     VARCHAR CHECK (root_cause IN ('requirement realization', 'documentation lag',
                                                'implementation choice', 'behavioral defect', 'mixed')),
   outcome        VARCHAR NOT NULL DEFAULT 'none'
-                 CHECK (outcome IN ('none', 'suggested', 'accepted', 'edited', 'declined', 'escalated')),
+                 CHECK (outcome IN ('none', 'applied', 'left_standing', 'amended_by_human', 'reverted', 'escalated')),
   decision_id    VARCHAR,
   CHECK (label IS NOT NULL OR indicator <> 'none'),
   PRIMARY KEY (repo, sha, edge_from, edge_to, indicator)

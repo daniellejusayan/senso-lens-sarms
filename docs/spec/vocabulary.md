@@ -43,7 +43,7 @@ Apply in this order; the first that fits wins, then the tie-break below.
 | Label | Evidence that selects it | Action |
 | --- | --- | --- |
 | requirement realization | the PR or issue describes a new capability and no conforming path exists under the current rules | decision record with options to the architects; never forced back |
-| documentation lag | the code is right and the record is stale: the PR text says the rule or the module moved, or the same pattern already exists in ≥ 3 other places | ADR amendment + rule update, confirmed by the author in one click |
+| documentation lag | the code is right and the record is stale: the PR text says the rule or the module moved, or the same pattern already exists in ≥ 3 other places | ADR amendment + rule update, committed by the system with the author named in the log entry |
 | implementation choice | the rule stands and a conforming path exists (an allowed layer, a port or adapter the ADR prescribes) | conforming version of the author's change |
 | behavioral defect | the deviation co-occurs with failing tests or a linked bug report | escalate this term (Generation loop in Term 2) |
 | mixed | evidence for two of the above | escalate with both halves |
@@ -58,7 +58,12 @@ cannot decide is labelled mixed, never skipped.
 
 ## Outcomes and verdicts
 
-- Verdict (gate): accept (post the verified suggestion), escalate, defer, reject.
-- Outcome (ledger): none, suggested, accepted, edited, declined, escalated.
+- Verdict (gate): accept (the kernel applies the verified correction as its own commit; no human
+  is asked — point 7), escalate, defer, reject.
+- Outcome (ledger): none, applied, left_standing, amended_by_human, reverted, escalated.
+  `left_standing` is set when the applied commit survives the watch window (default 30 days)
+  untouched; `amended_by_human` / `reverted` when a later human commit edits or undoes it.
+- System correction: a first-parent commit authored by the system that applies a verified
+  draft; always one commit, always revertable (G7).
 - Human repair: a first-parent commit, not by the system, after which a violating edge is
   absent while its contract can still be checked.
