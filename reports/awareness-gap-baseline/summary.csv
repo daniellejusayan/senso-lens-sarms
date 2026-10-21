@@ -4,3 +4,5 @@ wemake-services/wemake-python-styleguide,head_strict,3148,1,5,1,1,32.0,13.6,3,3
 bridgecrewio/checkov,head_strict,2695,1,25,1,0,,,6,5
 sqlfluff/sqlfluff,head_strict,1986,1,8,3,0,,,1,0
 ag2ai/faststream,head_strict,1624,1,80,0,0,,,3,0
+Qiskit/qiskit-serverless,head_strict,1868,1,2,0,0,,,1,0
+ramses-rf/ramses_rf,head_strict,4699,1,21,6,1,143.0,25.3,13,0
