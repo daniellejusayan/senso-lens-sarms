@@ -1,0 +1,39 @@
+# kept by tools/reduce_longlist.py (rules R1-R5 in docs/repo-selection.md)
+openedx/openedx-platform !nocheckout
+GridTools/gt4py
+SecObserve/SecObserve
+truenas/middleware !nocheckout
+bridgecrewio/checkov
+LibrePhotos/librephotos
+ramses-rf/ramses_rf
+sqlfluff/sqlfluff
+endurain-project/endurain
+kedro-org/kedro
+NVIDIA/cloudai
+gmboquet/mixle
+TencentBlueKing/blueking-apigateway
+wemake-services/wemake-python-styleguide
+ccie18643/PyTCP
+open-edge-platform/geti
+alan-turing-institute/AIrsenal
+TencentBlueKing/blueking-paas
+nolar/kopf
+ag2ai/faststream
+Qiskit/qiskit-serverless
+TencentBlueKing/bk-user
+underloam/xbbg
+Carvera-Community/Carvera_Controller
+modelscope/evalscope
+MODSetter/SurfSense
+apache/airflow !nocheckout
+gardenlinux/gardenlinux
+cisagov/manage.get.gov
+monocongo/climate_indices
+xorq-labs/xorq
+i-dot-ai/consult
+CERTCC/SSVC
+mitodl/ol-infrastructure
+Flowminder/FlowKit
+Integration-Automation/PyBreeze
+theupdateframework/python-tuf
+UKGovernmentBEIS/inspect_evals

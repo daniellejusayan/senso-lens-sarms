@@ -13,3 +13,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+# per-repository mining outputs travel in the data pack, not in git (see data/README.md)
+data/*/
+!data/samples/
+reports/logs/

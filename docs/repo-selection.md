@@ -15,6 +15,39 @@ run. Changes are appended under *Amendments*, never edited in place.
 | 7 | Licence | OSI-approved: MIT, Apache-2.0, BSD | licence |
 | 8 | Alive | a commit on the default branch in the last 6 months; not archived | last_commit, archived |
 
+## The team's own numbering
+
+The Step 1 sheets the team built (`data/Step1_usable_repos_230.csv`, `data/Step1_near_miss_203.csv`)
+number the criteria C1–C5. They are the same criteria; the mapping is fixed here so both
+numberings can be used: C1 = Python repository (criterion 5 above, measured there as a share),
+C2 = intent recorded (1), C3 = years of history (2; the sheet has no commit count, so 2's
+≥ 1,500 first-parent commits is measured by `tools/screen.py`), C4 = tests (3), C5 =
+violation-reducing commits (4). Licence (7), size (6) and liveness (8) are not on the sheet and
+are measured at screening.
+
+## From 230 to the screening list (R1–R5, 21 Oct 2026)
+
+`tools/reduce_longlist.py` reads the 230-row sheet and drops rows by five rules, in this
+order, writing one reason per row to `data/longlist_decisions.csv`. The sheet's own columns
+are used; every kept row is re-measured afterwards. No repository is chosen here.
+
+| Rule | Drops a row when | Dropped | Left |
+| --- | --- | --- | --- |
+| R3 fork / duplicate / the checker itself | the row is a fork or copy of a repository already on the list (two airflow forks, two dify copies, one iris fork), or is import-linter / grimp | 6 | 224 |
+| R1 intent too thin | fewer than 2 import-linter contracts and fewer than 10 ADRs (criterion 1 as frozen) | 82 | 142 |
+| R2 history too short | under 2 years or under 1,000 commits on the sheet (criterion 2's floor; the exact first-parent count is measured next) | 60 | 82 |
+| R4 no team behind it | under 50 stars — a proxy for "a team maintains this", which the practitioner study [1] the project rests on is about; personal and student repositories are not the population | 44 | 38 |
+| R5 tach-only rules | the only rules are `tach.toml` and there are < 10 ADRs; the replay tooling reads import-linter | 0 | 38 |
+
+(The rules are applied in the order R3, R1, R2, R4, R5 so that a fork is recorded as a fork
+even when it would also fail R1.) The 38 survivors are in `data/longlist.txt` and were cloned
+and screened by `tools/screen.py` on 21 Oct (`data/candidates.csv`); the three largest
+(openedx-platform, airflow, truenas/middleware) were screened without a checkout, so their
+line counts come from the GitHub language bytes only.
+
+The near-miss sheet (203 rows) is the reserve pool: it is not screened unless the shortlist
+falls below three primaries.
+
 ## Seed screening, 19 Oct 2026 (data/candidates_seed.csv)
 
 | Repository | Contracts (exceptions) / ADRs | First-parent commits | Python LOC, share | Licence | Contract since | Exception removals | Criteria |

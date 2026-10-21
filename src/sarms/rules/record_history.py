@@ -37,8 +37,8 @@ from sarms.mining.common import (
 )
 
 
-def state_at(d, sha):
-    fname, text = find_il_config(d, sha)
+def state_at(d, sha, files=IL_FILES):
+    fname, text = find_il_config(d, sha, files)
     if not fname:
         return None, {}
     opts = read_il_options(fname, text)
@@ -66,24 +66,25 @@ def pair_renames(prev, st):
     return pairs
 
 
-def history(repo_path, branch, out_dir, since=None, extra_paths=()):
+def history(repo_path, branch, out_dir, since=None, extra_paths=(), config=None):
+    files = [config] if config else IL_FILES
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     ref = resolve_ref(repo_path, branch)
     chain = first_parent(repo_path, ref)
     order = {sha: (idx, ts) for idx, sha, ts, _ in chain}
     head = chain[-1][1]
-    fname, text = find_il_config(repo_path, head)
+    fname, text = find_il_config(repo_path, head, files)
     if fname:
         ext = "toml" if fname.endswith(".toml") else "cfg"
         (out / f"importlinter.HEAD.{ext}").write_text(text)
     window = [f"--since={since}"] if since else []
     touched = git(repo_path, "log", "--first-parent", "--reverse", "--format=%H", *window, ref, "--",
-                  *IL_FILES, *extra_paths).split()
+                  *files, *extra_paths).split()
     events, prev, prev_union = [], {}, set()
     intro = {}
     for sha in touched:
-        f, st = state_at(repo_path, sha)
+        f, st = state_at(repo_path, sha, files)
         i, ts = order[sha]
         base = {"idx": i, "sha": sha, "ts": ts, "config_file": f or ""}
         if st is None:
@@ -140,5 +141,6 @@ if __name__ == "__main__":
     ap.add_argument("out_dir")
     ap.add_argument("--since", help="YYYY-MM-DD, at least a month before the first contract")
     ap.add_argument("--extra-path", action="append", default=[], help="a config passed to lint-imports with --config")
+    ap.add_argument("--config", help="path of the import-linter config inside the repo when it is not at the root (monorepos)")
     a = ap.parse_args()
-    history(a.repo_path, a.branch or None, a.out_dir, a.since, a.extra_path)
+    history(a.repo_path, a.branch or None, a.out_dir, a.since, a.extra_path, a.config)

@@ -38,7 +38,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from sarms.mining.common import find_il_config, first_parent, git, read_il_options, resolve_ref
+from sarms.mining.common import IL_FILES, find_il_config, first_parent, git, read_il_options, resolve_ref
 
 WORKER = Path(__file__).with_name("_lint_worker.py")
 DEFAULT_MATCH = r"import|layer|architect|depend|circular|cycle|boundar|refactor"
@@ -98,8 +98,10 @@ def main():
     ap.add_argument("--since", help="YYYY-MM-DD: start of the window")
     ap.add_argument("--src", nargs="*", help="source roots relative to the repo, if auto-detection fails")
     ap.add_argument("--timeout", type=int, default=600, help="seconds per commit")
+    ap.add_argument("--config", help="path of the import-linter config inside the repo when it is not at the root (monorepos)")
     a = ap.parse_args()
     strict = not a.keep_ignores
+    files = [a.config] if a.config else IL_FILES
     suffix = ("" if a.rules == "head" else "_asof") + ("" if strict else "_asis")
     repo, out = Path(a.repo_path), Path(a.out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -113,7 +115,7 @@ def main():
     pd.DataFrame(sample, columns=["idx", "sha", "ts", "msg"]).to_csv(out / f"sample{suffix}.csv", index=False)
 
     if a.rules == "head":
-        fname, text = find_il_config(repo, chain[-1][1])
+        fname, text = find_il_config(repo, chain[-1][1], files)
         if not fname:
             sys.exit("no import-linter configuration at HEAD; this repository has no checkable record")
         session, contracts = prepare(read_il_options(fname, text), strict)
@@ -126,7 +128,7 @@ def main():
         git(wt, "checkout", "-q", "--force", sha)
         git(wt, "clean", "-fdq")
         if a.rules == "asof":
-            fname, text = find_il_config(repo, sha)
+            fname, text = find_il_config(repo, sha, files)
             if not fname:
                 continue
             o = read_il_options(fname, text)

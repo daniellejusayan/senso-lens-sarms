@@ -2,7 +2,8 @@
 
     uv run python tools/screen.py data/longlist.txt            # -> data/candidates.csv
 
-One line per repository in the list (owner/name; # comments allowed). Each is cloned as a
+One line per repository in the list (owner/name; # comments allowed; "!nocheckout" after a
+name skips the line count for that one very large repository). Each is cloned as a
 partial clone into data/raw/REPO (the same clone Steps 1b and 1c use). Criteria 3 (tests) and
 4 (repairs) are filled from data/tests.csv and reports/awareness-gap-baseline/summary.csv
 when those exist, otherwise left "pending". Re-run any time; rows are rebuilt from evidence.
@@ -44,7 +45,8 @@ TODAY = dt.date.today()
 SHEET = ["repo", "url", "stars", "default_branch", "first_commit", "n_first_parent", "contracts", "adrs",
          "tests_min", "loc_py", "licence", "last_commit", "criteria_met", "decision", "reason"]
 EXTRA = ["python_share_pct", "contract_types", "exceptions", "contract_since", "lint_imports_in_ci",
-         "archived", "drops_c4", "exception_removals", "adr_dirs"]
+         "archived", "drops_c4", "exception_removals", "adr_dirs", "config_path"]
+NESTED_SKIP = re.compile(r"(^|/)(tests?|testing|examples?|docs?|fixtures|templates?|vendor|node_modules|\.[^/]+)/", re.I)
 CODE_EXT = {".py": "Python", ".js": "JS", ".jsx": "JS", ".ts": "TS", ".tsx": "TS", ".java": "Java",
             ".go": "Go", ".rs": "Rust", ".c": "C", ".h": "C", ".cpp": "C++", ".cc": "C++", ".cs": "C#",
             ".rb": "Ruby", ".php": "PHP", ".kt": "Kotlin", ".scala": "Scala", ".swift": "Swift",
@@ -76,13 +78,34 @@ def licence_from_file(d, sha):
     return ""
 
 
-def contract_since(d, ref):
-    log = git(d, "log", "--first-parent", "--reverse", "--format=%H%x09%cs", ref, "--", *IL_FILES)
+def find_il_config_anywhere(d, head, files):
+    """Root first (what lint-imports reads by default), then nested configs (monorepos such as
+    librephotos/apps/backend or truenas/src/middlewared), skipping tests, docs and examples.
+    Returns (path, text) of the config with the most contracts."""
+    fname, text = find_il_config(d, head)
+    if fname:
+        return fname, text
+    best = (0, None, None)
+    for f in files:
+        base = f.rsplit("/", 1)[-1]
+        if base not in IL_FILES or "/" not in f or NESTED_SKIP.search(f) or f.count("/") > 3:
+            continue
+        t = show(d, head, f)
+        if t and has_il_section(f, t):
+            o = read_il_options(f, t)
+            n = len(o.contracts_options) if o else 0
+            if n > best[0]:
+                best = (n, f, t)
+    return best[1], best[2]
+
+
+def contract_since(d, ref, files=IL_FILES):
+    log = git(d, "log", "--first-parent", "--reverse", "--format=%H%x09%cs", ref, "--", *files)
     cands = [line.split("\t") for line in log.splitlines() if line.strip()]
     lo, hi, found = 0, len(cands) - 1, ""
     while lo <= hi:
         mid = (lo + hi) // 2
-        if any(has_il_section(f, t) for f in IL_FILES if (t := show(d, cands[mid][0], f))):
+        if any(has_il_section(f, t) for f in files if (t := show(d, cands[mid][0], f))):
             found, hi = cands[mid][1], mid - 1
         else:
             lo = mid + 1
@@ -103,7 +126,7 @@ def screen(owner_repo, checkout=True, tests=None, base=None):
     nfp = int(git(d, "rev-list", "--first-parent", "--count", ref))
     files = git(d, "ls-tree", "-r", "--name-only", ref).splitlines()
 
-    fname, text = find_il_config(d, head)
+    fname, text = find_il_config_anywhere(d, head, files)
     contracts, types, exceptions = 0, [], 0
     if fname and (o := read_il_options(fname, text)):
         contracts = len(o.contracts_options)
@@ -167,7 +190,8 @@ def screen(owner_repo, checkout=True, tests=None, base=None):
         "criteria_met": f"met {met or '-'}; failed {failed or '-'}; pending {pending or '-'}",
         "decision": "", "reason": "",
         "python_share_pct": share, "contract_types": " ".join(types), "exceptions": exceptions,
-        "contract_since": contract_since(d, ref) if fname else "", "lint_imports_in_ci": " ".join(ci),
+        "contract_since": contract_since(d, ref, [fname]) if fname else "", "lint_imports_in_ci": " ".join(ci),
+        "config_path": fname or "",
         "archived": archived, "drops_c4": drops, "exception_removals": removals,
         "adr_dirs": " ".join(adr_dirs[:3]) + (" …" if len(adr_dirs) > 3 else ""),
     }
@@ -180,16 +204,20 @@ def main():
     ap.add_argument("--no-checkout", action="store_true", help="skip the checkout (no LOC) for very large repositories")
     a = ap.parse_args()
     tests = evidence_rows("data/tests.csv")
+    listed = evidence_rows("data/longlist_decisions.csv")   # stars from the team's sheet when gh is unavailable
     base = evidence_rows(REPORTS / "awareness-gap-baseline" / "summary.csv")
     keep = evidence_rows(a.out)          # keep decision/reason typed by hand
     rows = []
-    for r in [line.split("#")[0].strip() for line in open(a.longlist)]:
-        if not r:
+    for line in [ln.split("#")[0].strip() for ln in open(a.longlist)]:
+        if not line:
             continue
+        r, *flags = line.split()          # "owner/repo !nocheckout" skips the LOC count for one huge repo
         try:
-            row = screen(r, checkout=not a.no_checkout, tests=tests, base=base)
+            row = screen(r, checkout=not a.no_checkout and "!nocheckout" not in flags, tests=tests, base=base)
         except Exception as e:
             row = {"repo": r, "reason": f"screening error: {str(e).splitlines()[0][:150]}"}
+        if row.get("stars", "") == "" and r in listed:
+            row["stars"] = listed[r].get("stars_listed", "")
         if r in keep:
             row["decision"], row["reason"] = keep[r].get("decision", ""), keep[r].get("reason", "") or row.get("reason", "")
         rows.append(row)
