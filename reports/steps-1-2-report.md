@@ -241,7 +241,7 @@ dependencies.
 | ag2ai/faststream | 1,624 (all) | 8 (2026-09) | 80 | 0 | – | – | 3 | 0 | 20 |
 | ramses-rf/ramses_rf | 4,699 (all) | 4 (2026-06) | 21 | 6 | 1 | 143 / 25 | 13 | 0 | 15 |
 | Qiskit/qiskit-serverless | 1,868 (all) | 3 (2026-02) | 2 | 0 | – | – | 1 | 0 | 0 |
-| PostHog/posthog (exploratory) | every 10th since 2026-03 | 6 (2026-04) | running at time of writing | | | | | 59 commits removed 292 exceptions | 189 exceptions |
+| PostHog/posthog (exploratory, stride 50) | 663 of ~33,000 since 2026-03 | 6 (2026-04) | 111 | 101 | 22 (22%) | 1,200 / 5 | 30 | 59 | 189 exceptions |
 
 ### Finding 1 — enforced rules keep violations off main; what stands is acknowledged debt
 
@@ -296,8 +296,10 @@ the mess listed as exceptions. Our root-cause label *documentation lag* is for e
 sqlfluff 1, faststream 3, ramses_rf 13 (mostly before its contract), qiskit 1. The ≥ 20
 threshold assumed repairs would be frequent; findings 1–3 say why they are not. We took option
 C — criterion 4 is reported as a finding, not used for selection — and admitted PostHog as a
-detection-only case because it is the one repository where repair is frequent (292 exceptions
-removed in 59 commits in six months).
+detection-only case because it is the one repository where repair is frequent: 101 post-contract
+episodes in six months, 22 repaired, 30 drops, 59 exception-removal commits — and a median gap
+of 5 days, because PostHog lands ~150 commits a day (1,200 commits) and runs the checker in CI
+(`reports/exploratory/posthog.md`, sampled every 50th commit).
 
 **In plain words.** We expected to find lots of "someone fixed an architecture violation"
 commits. We found a handful per project, because the checker stops most violations before
@@ -360,8 +362,7 @@ quietly move the goalposts, and we recorded a fingerprint of each file to prove 
 | **Criterion 3 — each primary's test suite runs in under 10 minutes** (kedro, checkov, wemake, gt4py) | G3 runs the suite on every draft; a slow suite makes the loop unusable. Not yet measured: `tools/check_tests.sh` needs a laptop with Git Bash/WSL. A failure swaps the primary with reserve 1 (sqlfluff). | team laptop, before Friday 23 Oct |
 | **sqlfluff's Python share** (~86% by file size; criterion 5 says ≥ 90%) | decides whether sqlfluff is a reserve or a primary candidate; SQL fixture files may be inflating the non-Python share | `gh api repos/sqlfluff/sqlfluff/languages` on a laptop |
 | **Advisor's confirmation** of the selected set, of option C for criterion 4, and of PostHog as a detection-only subject that fails criteria 5–7 | selection is frozen on his nod; the amendments are dated for that | Friday 23 Oct |
-| **PostHog run finishing** and the exploratory report | the only repair-rich history; RQ1/RQ3 statistics | here, today |
-| **Labelling samples re-drawn** once PostHog is in | `rootcause_50.csv` currently holds 29 post-contract cases, not 50 | here, same seed, then committed before labelling |
+| **Labelling starts** on the committed samples | 100 precision cases across 7 repositories (14 per repository, the rest to the largest), 46 post-contract root-cause cases among them — 4 short of 50 because the precision draw is stratified; the protocol allows topping up from PostHog (PostHog included, as RQ3 is detection-side); two raters, independently | Week 2 |
 | **Hand-check of the ADR structural flag** on gt4py's 21 | a keyword screen over-selects; the compilable fraction (RQ1) needs a human read first | Week 2, two members independently |
 | **Pre-contract vs window** | checkov and sqlfluff were replayed from 2023-06; episodes that start at the window edge are "already there", not introduced then. The paper must say so. | writing, Week 2 |
 | **Fault-injection fit** | injections 1–3 need a layers contract; checkov has only forbidden contracts, so it gets substitutes (allowed by the protocol, must be written in the run README) | Week 5 |
