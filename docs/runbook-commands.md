@@ -16,6 +16,7 @@ uv run python tools/run_step1.py OWNER/REPO --skip-proxy                        
 uv run python tools/run_step1.py OWNER/REPO --skip-proxy --root PACKAGE             # ADR track with the HEAD graph (no import-linter record)
 uv run python -m sarms.mining.adr_history data/raw/REPO "$BRANCH" data/REPO OWNER/REPO   # ADR track: dates, titles, structural flag
 uv run python -m sarms.graph.extract data/raw/REPO [--sha SHA]                      # the import graph of one commit -> data/REPO/graph/<sha>/
+uv run python tools/render_graph.py data/REPO/graph/<sha12> reports/figures/NAME   # draw it (Graphviz)
 uv run python tools/draw_sample.py OWNER/REPO [OWNER/REPO ...]                      # the seeded labelling samples (commit them)
 
 # Step 1b — mine the first-parent history (REPO = name without owner, clone in data/raw/REPO)

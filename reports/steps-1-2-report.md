@@ -309,6 +309,45 @@ dropped it as a filter.
 > *Where it lives:* `reports/awareness-gap-baseline.md`; `docs/repo-selection.md` § Decision
 > taken 21 Oct and § Amendments; `reports/exploratory/posthog.md` (when the run finishes).
 
+### The import graph, drawn
+
+**In full.** Everything above is computed on grimp's module-level import graph, and until 21 Oct
+that graph was never written down — the replay kept only the violating edges. `sarms.graph.extract`
+now stores the whole graph of any commit under `data/<repo>/graph/<sha12>/` (edges with line
+numbers and the import text, modules with fan-in/out and cycle membership, a package roll-up,
+`summary.json`), and `tools/render_graph.py` draws the package level with the record laid on top:
+dashed boxes are packages no layer or rule names, red edges are direct imports that break a rule
+under the strict record. Two kedro snapshots are stored and drawn.
+
+![kedro at HEAD, 19 Oct 2026](figures/kedro-packages-head.png)
+
+*kedro at HEAD (738830bb): 75 modules, 234 import edges, 13 packages, one 29-module cycle. Seven
+packages are dashed — `inspection`, `ipython`, `logging`, `server`, `utils`, `validation`,
+`__main__` — because the four contracts name only `config`, `framework.*`, `io`, `pipeline`,
+`runner`. The red `runner → framework` (5 imports) is the INVERTED edge of the layers contract;
+the other five violating pairs at HEAD are indirect chains (runner → framework → config), which
+forbidden contracts also count but a package drawing cannot show.*
+
+![kedro on 16 Jul 2020](figures/kedro-packages-2020-07.png)
+
+*kedro on 16 Jul 2020 (9039f82a, the commit that introduced `runner → config` together with its
+exception): 98 modules, 167 edges, 12 packages, no cycle; `kedro.cli` and `kedro.context` still
+top-level. Between the two pictures the team moved cli/context under `framework`, wrote the
+layers contract around that, and a cycle through `framework` grew that no rule forbids — which
+is what the drift indicators are for.*
+
+**In plain words.** The drawing is the "who imports whom" map the system reads. Grey dashed
+boxes are parts of the code the rulebook says nothing about; red arrows are imports the
+rulebook forbids but the code still has. Comparing 2020 with today shows the architecture moving
+under the rules.
+
+> *Where it lives:* `data/kedro/graph/738830bbf026/` and `data/kedro/graph/9039f82a31c5/`
+> (`edges.csv`, `modules.csv`, `packages.csv`, `packages.dot`, `summary.json`);
+> `reports/figures/kedro-packages-*.{svg,png,dot}`;
+> `uv run python -m sarms.graph.extract data/raw/REPO [--sha SHA]` then
+> `uv run python tools/render_graph.py data/REPO/graph/<sha12> reports/figures/<name>`
+> (needs Graphviz on PATH; without it the `.dot` is written for an online viewer).
+
 ### The ADR track
 
 gt4py: 51 ADRs, 21 flagged structural by the keyword screen; airflow 49 / 35; openedx 143 /
@@ -417,4 +456,5 @@ quietly move the goalposts, and we recorded a fingerprint of each file to prove 
   violations. One reused worktree and grimp's cache make every-commit replay affordable (kedro
   5 min alone, 15 min when sharing two cores). A commit subject with a control character
   (PostHog) split a git-log record; records are NUL-separated now, with a test. The GitHub API
-  is unreachable from the build machine, so stars fall back to the team's sheet.
+  is unreachable from the build machine, so stars fall back to the team's sheet. The import graph
+  of a commit is now a stored, drawable artifact (`sarms.graph.extract`, `tools/render_graph.py`).

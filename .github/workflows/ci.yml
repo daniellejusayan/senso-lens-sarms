@@ -17,3 +17,19 @@ jobs:
       - run: uv run pytest -q
       - run: uv run lint-imports
       - run: uv run python tools/validate_spec.py
+  attribution:
+    # Every commit is authored by a team member. Fails on an assistant trailer or a placeholder
+    # identity, which is how stray "contributors" appeared once (docs/redo-repository-plan.md).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: no assistant trailers, no placeholder authors
+        run: |
+          range="${{ github.event.before }}..${{ github.sha }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then range="origin/${{ github.base_ref }}..HEAD"; fi
+          if ! git rev-parse -q --verify "${{ github.event.before }}" >/dev/null 2>&1; then range="HEAD"; fi
+          bad=$(git log --format='%H %an <%ae> | %cn <%ce>%n%b' "$range" | grep -i -E 'co-authored-by:.*(claude|anthropic)|@anthropic\.com|claude-session:|sarms@users\.noreply|<sarms@' || true)
+          if [ -n "$bad" ]; then echo "attribution check failed:"; echo "$bad"; exit 1; fi
+          echo "attribution ok for $range"
