@@ -1,0 +1,10 @@
+# Replace with the four handles once letters A-D are assigned (runbook, "Definition of done").
+*                 @daniellejusayan
+/src/sarms/mining/   @daniellejusayan
+/src/sarms/replay/   @daniellejusayan
+/src/sarms/rules/    @daniellejusayan
+/src/sarms/verify/   @daniellejusayan
+/docs/spec/          @daniellejusayan
+/docs/ethics.md      @daniellejusayan
+/.github/            @daniellejusayan
+/.importlinter       @daniellejusayan

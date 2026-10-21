@@ -1,0 +1,59 @@
+# JSON Schema (draft 2020-12, written in YAML) for one entry of .rms/rules/*.yaml.
+# Spec v0, draft for C. Fields follow the runbook's example rule.
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: sarms/rules.schema.yaml
+title: Compiled rule
+type: object
+additionalProperties: false
+required: [id, kind, from, to, source, compiled_at, severity, evaluable]
+properties:
+  id:
+    type: string
+    pattern: "^R-[A-Za-z0-9._-]+$"
+    description: R-<source>-<n>, e.g. R-ADR007-1 or R-kedro-runner-config-1
+  kind:
+    enum: [allowed, forbidden, required]
+  from:
+    type: string
+    description: importing module or component, dotted; * matches one level, ** any depth
+  to:
+    type: string
+  source:
+    type: object
+    additionalProperties: false
+    required: [type, id]
+    properties:
+      type: {enum: [contract, adr, recovered]}
+      id: {type: string, description: contract name or ADR id}
+      sentence: {type: string, description: the ADR sentence or contract line the rule came from}
+  compiled_at:
+    type: string
+    pattern: "^[0-9a-f]{7,40}$"
+    description: commit the rule was compiled at
+  severity:
+    enum: [high, medium, low]
+  evaluable:
+    type: boolean
+    description: false = the ADR sentence could not be compiled; reported, routed to humans
+  acknowledged:
+    type: array
+    items: {type: string, pattern: "^\\S+ -> \\S+$"}
+    description: ignore_imports entries that belong to this rule
+examples:
+  - id: R-ADR007-1
+    kind: forbidden
+    from: app.ui.*
+    to: app.db.*
+    source: {type: adr, id: ADR-007, sentence: "UI reaches persistence only through the service layer"}
+    compiled_at: 3f2a9c1e
+    severity: high
+    evaluable: true
+  - id: R-kedro-runner-config-1
+    kind: forbidden
+    from: kedro.runner
+    to: kedro.config
+    source: {type: contract, id: "Runner et al cannot import Config", sentence: "source_modules = kedro.runner; forbidden_modules = kedro.config"}
+    compiled_at: 738830bb
+    severity: high
+    evaluable: true
+    acknowledged: ["kedro.framework.context.context -> kedro.config"]

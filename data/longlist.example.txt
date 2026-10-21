@@ -1,0 +1,4 @@
+kedro-org/kedro
+napari/napari
+bridgecrewio/checkov
+sqlfluff/sqlfluff

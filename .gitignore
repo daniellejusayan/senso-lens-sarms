@@ -1,0 +1,11 @@
+
+# sarms
+data/raw/
+data/raw/*
+*.wt/
+*.ilcache/
+*.testvenv/
+.salt
+*.parquet
+reports/tests/
+.import_linter_cache/

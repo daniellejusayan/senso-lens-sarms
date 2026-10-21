@@ -1,0 +1,26 @@
+[importlinter]
+root_package = sarms
+
+[importlinter:contract:layers]
+name = MSV-K layering
+type = layers
+layers =
+    sarms.kernel
+    sarms.verify
+    sarms.synthesize
+    sarms.differ
+    sarms.graph | sarms.rules | sarms.replay
+    sarms.ledger
+    sarms.mining
+
+[importlinter:contract:no-model-in-differ]
+name = The Differ never calls the model
+type = forbidden
+source_modules = sarms.differ
+forbidden_modules = sarms.synthesize
+
+[importlinter:contract:no-model-in-verify]
+name = The gate never calls the model
+type = forbidden
+source_modules = sarms.verify
+forbidden_modules = sarms.synthesize

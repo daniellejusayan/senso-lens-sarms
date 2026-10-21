@@ -1,0 +1,47 @@
+[project]
+name = "sarms"
+version = "0.1.0"
+description = "Senso-Lens / SARMS: a self-adaptive repository management system that keeps code faithful to its recorded architecture after each push"
+readme = "README.md"
+authors = [
+    { name = "Danielle Jerick M. Jusayan" },
+    { name = "Eaindray" },
+    { name = "Kanthi Phoosorn" },
+    { name = "Withuwit Ninphan" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb>=1.5.6",
+    "gitpython>=3.2.1",
+    "grimp==3.17",
+    "import-linter==2.15",
+    "jsonschema>=4.26.0",
+    "networkx>=3.6.1",
+    "pandas>=3.0.6",
+    "pyarrow>=26.0.0",
+    "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+sarms = "sarms:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
