@@ -48,6 +48,14 @@ examples:
     compiled_at: 3f2a9c1e
     severity: high
     evaluable: true
+  - id: R-openedx-ADR0002-1
+    kind: required
+    from: "lms.djangoapps.*"
+    to: "lms.djangoapps.*.api"
+    source: {type: adr, id: "0002-inter-app-apis", sentence: "Python clients outside of an app will interface only through declared APIs in either api.py or test_api.py"}
+    compiled_at: 1a2b3c4d
+    severity: medium
+    evaluable: true
   - id: R-kedro-runner-config-1
     kind: forbidden
     from: kedro.runner

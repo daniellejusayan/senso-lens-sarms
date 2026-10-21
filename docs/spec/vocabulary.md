@@ -9,7 +9,7 @@ changes after Friday 23 Oct go through a pull request with a reason.
 | Label | Decision rule | Counts as | Real example |
 | --- | --- | --- | --- |
 | CONFIRMED | an edge a rule allows (or requires) is present in the import graph | conformance | kedro: `kedro.framework.session.session → kedro.io.core` (session sits above io in the layers contract; line 28) |
-| MISSING | a required edge is absent | erosion if the edge was present at an earlier commit; otherwise a documentation question for the record | none in import-linter contracts (they state no required edges); take the first one from an ADR-track repository in Week 2 |
+| MISSING | a required edge is absent | erosion if the edge was present at an earlier commit; otherwise a documentation question for the record | import-linter contracts state no required edges; ADRs do. openedx-platform [ADR 0002 "Inter-app APIs"](https://github.com/openedx/openedx-platform/blob/master/docs/decisions/0002-inter-app-apis.rst) (accepted 2019-05-06): "Python clients outside of an app will interface only through declared APIs in api.py" — compiled, every Django app that other apps import must expose `<app>.api`, and every cross-app edge must land on it. An app imported from outside with no `api.py` module, or a cross-app edge that lands on `<app>.models` instead, is the MISSING edge `<client> → <app>.api` (and the latter also an ADDITIONAL `<client> → <app>.models`) |
 | ADDITIONAL | an edge is present that a forbidden or layers rule disallows, including indirect chains, as import-linter counts them | erosion | kedro: `kedro.runner → kedro.config` under "Runner et al cannot import Config": introduced 16 Jul 2020 by [9039f82a](https://github.com/kedro-org/kedro/commit/9039f82a31c5826672758d19d00d14feb9349e8c) (which also listed it as an exception), gone 31 Mar 2022 with the merge [e6cfb423](https://github.com/kedro-org/kedro/commit/e6cfb42373398bef2dc0c19d24e62373e34780e3), back on 9 May 2022 ([7c5b55f7](https://github.com/kedro-org/kedro/commit/7c5b55f7edbfa57b48014f89b93a2cc9cf1ba8c6)), still open |
 | INVERTED | under a layers rule an edge points from a lower layer to a higher one; or where A→B is required, B→A exists instead | erosion | kedro: `kedro.runner → kedro.framework.session` (runner sits below framework.session): 17 Dec 2020, merge [1bb5f4be](https://github.com/kedro-org/kedro/commit/1bb5f4be6fc4e6ef7a5a9480131cbce4582385c9), to 31 Mar 2022, merge [e6cfb423](https://github.com/kedro-org/kedro/commit/e6cfb42373398bef2dc0c19d24e62373e34780e3) |
 
@@ -28,13 +28,13 @@ exceptions are counted apart from unacknowledged violations.
 
 ## Drift indicators — no rule broken
 
-Initial thresholds; calibrated in Week 3 on the subject repositories.
+Initial thresholds; calibrated in Week 3 on the subject repositories. Examples computed on 21 Oct 2026 with grimp 3.17 on kedro's default branch (`data/raw/kedro.wt`).
 
 | Indicator | Definition | Initial threshold | Real example |
 | --- | --- | --- | --- |
-| Unassigned module | a top-level module matched by no layer and no rule | count per commit; any increase is reported | fill in Week 2 from the module graph |
-| New cycle | a strongly connected component of ≥ 2 modules absent at the parent commit (`networkx.strongly_connected_components` on the module graph) | any | fill in Week 2 |
-| Hub fan-in growth | a module whose in-degree grows by ≥ 3 edges and ≥ 20% within a 4-week window | reported on the weekly tick | fill in Week 3 |
+| Unassigned module | a top-level module matched by no layer and no rule | count per commit; any increase is reported | kedro HEAD (21 Oct 2026, grimp): 7 of 12 top-level packages are named by no layer or rule — `inspection`, `ipython`, `logging`, `server`, `utils`, `validation`, `__main__`; the contracts name only `config`, `framework.*`, `io`, `pipeline`, `runner` |
+| New cycle | a strongly connected component of ≥ 2 modules absent at the parent commit (`networkx.strongly_connected_components` on the module graph) | any | kedro HEAD has one SCC of 30 modules spanning `kedro.framework.{cli,context,hooks,project,session,startup}`, `kedro.runner.*`, `kedro.pipeline`, `kedro.validation.*` and `kedro.ipython`; at package level the cycle joins 9 of 12 packages. No rule forbids it, so it is drift, not erosion — and the kind the weekly tick is for. The first commit that closed it is found in Week 2 by walking the replay |
+| Hub fan-in growth | a module whose in-degree grows by ≥ 3 edges and ≥ 20% within a 4-week window | reported on the weekly tick | kedro HEAD hubs by fan-in: `kedro.framework.project` 16, `kedro.utils` 14, `kedro.io.core` 14, `kedro.framework.startup` 12; the growth series comes from the Week 3 per-commit graphs |
 
 ## Root-cause labels — one per deviation (Synthesize, and independently two raters)
 
