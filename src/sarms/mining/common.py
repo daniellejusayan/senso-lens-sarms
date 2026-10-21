@@ -75,11 +75,13 @@ def resolve_ref(repo_dir, branch: str | None = None) -> str:
 
 def first_parent(repo_dir, ref: str, since: str | None = None):
     """[(idx, sha, committer_iso, subject)] oldest -> newest; idx = position on the full chain."""
-    out = git(repo_dir, "log", "--first-parent", "--reverse", "--format=%H%x1f%cI%x1f%s", ref)
+    # -z: NUL between records, because a subject line can hold characters str.splitlines() treats
+    # as line breaks (PostHog has a subject with U+001D), which split a record in two.
+    out = git(repo_dir, "log", "-z", "--first-parent", "--reverse", "--format=%H%x1f%cI%x1f%s", ref)
     rows = []
-    for idx, line in enumerate(out.splitlines()):
-        sha, ts, subj = line.split("\x1f", 2)
-        rows.append((idx, sha, ts, subj))
+    for idx, rec in enumerate(r for r in out.split("\0") if r):
+        sha, ts, subj = rec.split("\x1f", 2)
+        rows.append((idx, sha, ts, subj.replace("\n", " ")))
     if since:
         rows = [r for r in rows if r[2][:10] >= since]
     return rows

@@ -16,9 +16,9 @@ src/sarms/rules       record history now; rule compiler later    src/sarms/ledge
 src/sarms/replay      proxy run and baseline (Step 1c)           src/sarms/synthesize  LLM drafting (Week 4)
 src/sarms/graph       grimp / networkx (Week 2)                  src/sarms/verify      gate G0–G8 (Week 4–5)
                                                                   src/sarms/kernel      executor (Week 5)
-tools/                screening, test timing, spec validation     docs/spec/            the frozen specification (Step 2)
+tools/                longlist reduction, screening, 1b+1c runner, samples, spec validation     docs/spec/            the frozen specification (Step 2)
 data/<repo>/          derived, pseudonymised data (Parquet is git-ignored this week)
-reports/              baseline, P1 pack, M1–M3 reports
+reports/              baselines, ADR track, exploratory, P1 pack, M1–M3 reports
 ```
 
 `.importlinter` holds our own contracts (the Differ and the gate may never import the model

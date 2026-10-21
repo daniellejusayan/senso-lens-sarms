@@ -1,0 +1,25 @@
+# ADR track: xorq-labs/xorq
+
+21 ADR files at `1594e9b4`; first added 2026-03-20, last 2026-09-30; 19 flagged structural by keyword screen (≥ 2 distinct terms) — the candidates for rule compilation.
+
+| Added | Title | Status | Structural terms |
+| --- | --- | --- | --- |
+| 2026-04-01 | [ADR-0003: Make git-annex optional via a CatalogBackend abstraction](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0003-optional-git-annex-backend.md) |  | coupling dependencies dependency import interface |
+| 2026-04-06 | [ADR-0004: uv as the sole packaging and execution runtime for the sdist pipeline](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0004-uv-as-sole-packaging-and-execution-runtime.md) |  | boundaries coupling dependencies dependency interface package packages |
+| 2026-04-12 | [ADR-0005: ExprBuilder — registry-driven domain object recovery from tagged expressions](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0005-expr-builder-from-tagged-registry.md) |  | layer module package packages |
+| 2026-04-19 | [ADR-0007: Canonicalize catalog-extract tempdir in DataFusion DT tokens](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0007-datafusion-plan-path-canonicalization.md) |  | coupling layer layers |
+| 2026-04-20 | [ADR-0008: Wheel-based uv packaging and execution pipeline](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0008-wheel-based-packaging-pipeline.md) |  | boundaries coupling dependencies dependency import interface package packages |
+| 2026-05-01 | [ADR-0009: Namespace S3 bucket layout by remote name and UUID](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0009-bucket-fileprefix-name-uuid-namespace.md) |  | interface layers must not |
+| 2026-05-07 | [ADR-0010: Split data-dependent tokens out of expression normalization](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0010-split-normalize-op-data-from-structure.md) |  | boundaries dependencies dependency import importing imports |
+| 2026-05-07 | [ADR-0011: Catalog supports a single git remote](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0011-catalog-single-git-remote.md) |  | boundary depend |
+| 2026-05-22 | [ADR-0012: Shared Click option decorators and runner class hierarchy for CLI parity](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0012-click-option-decorators-and-runner-hierarchy.md) |  | boundary circular coupling import imports layer module modules package |
+| 2026-06-22 | [ADR-0014: TeeNode, deferred write as a side effect](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0014-teenode-deferred-writes.md) |  | layer must not |
+| 2026-06-25 | [ADR-0013: Replace SafeTee with batchcorder StreamCache for RemoteTable fan-out](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0013-batchcorder-stream-cache-for-remote-table-fan-out.md) |  | dependency interface layer must not |
+| 2026-07-06 | [ADR-0015: Every op modifies the build hash; cache-hash neutrality is the exception](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0015-build-hash-cache-hash-split.md) |  | boundaries boundary should not |
+| 2026-08-03 | [ADR-0017: Hash identity comes from xorq-owned canonical forms, never dependency-serializer bytes](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0017-canonical-hash-forms-not-serializer-bytes.md) |  | coupling dependency layer layers |
+| 2026-08-04 | [ADR-0016: Table-driven opaque descent with registration tripwires](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0016-table-driven-opaque-descent-with-registration-tripwires.md) |  | dependency import layer module modules |
+| 2026-08-10 | [ADR-0020: Engine behavior is an immutable, identity-folded declarative spec](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0020-engine-behavior-as-immutable-identity-folded-spec.md) |  | dependency module modules |
+| 2026-08-10 | [ADR-0021: Engine construction is two-level — a cross-engine IdentitySpec feeds an EngineBuilder; per-engine specs feed `](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0021-engine-construction-is-two-level-identityspec-feeds-enginebuilder.md) |  | depend import imports layer layers module modules should not |
+| 2026-08-10 | [ADR-0023: Identity-spec contributions are entry points, composed order-independently into DEFAULT_BUILDER](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/0023-identity-spec-contributions-are-entry-points-composed-order-independently.md) |  | dependencies import module modules package packages |
+| 2026-08-10 | [ADR-2210: Derive ADR numbers from pull request numbers](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/2210-adr-numbers-from-pull-request-numbers.md) |  | boundary must not should not |
+| 2026-09-30 | [ADR-2332: Make the Redshift ADBC accelerator optional over a psycopg baseline](https://github.com/xorq-labs/xorq/blob/1594e9b4b9b2/docs/adr/2332-redshift-psycopg-baseline-adbc-optional.md) |  | dependencies dependency import imports module must not |

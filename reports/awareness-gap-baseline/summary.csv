@@ -1,0 +1,6 @@
+repo,variant,sampled,stride,edges,episodes_after_contract,repaired,median_gap_commits,median_gap_days,drops,exception_removal_commits
+kedro-org/kedro,head_strict,1957,1,16,28,19,92.0,155.8,4,3
+wemake-services/wemake-python-styleguide,head_strict,3148,1,5,1,1,32.0,13.6,3,3
+bridgecrewio/checkov,head_strict,2695,1,25,1,0,,,6,5
+sqlfluff/sqlfluff,head_strict,1986,1,8,3,0,,,1,0
+ag2ai/faststream,head_strict,1624,1,80,0,0,,,3,0

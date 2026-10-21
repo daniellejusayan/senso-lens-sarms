@@ -65,6 +65,7 @@ def main():
     ap.add_argument("data_dir")
     ap.add_argument("owner_repo")
     ap.add_argument("--suffix", default="", help="'' for the strict HEAD run, '_asof' etc. for the variants")
+    ap.add_argument("--exploratory", action="store_true", help="detection-only case: report under reports/exploratory/, kept out of the summary")
     a = ap.parse_args()
     d, repo = Path(a.data_dir), a.owner_repo
     checks = pd.read_parquet(d / f"checks_sample{a.suffix}.parquet")
@@ -117,9 +118,17 @@ def main():
         f"Caveat: resolution is the sampling stride (±{stride} commits); Weeks 2–3 recompute per commit with the Differ.",
         "",
     ]
+    ep.to_csv(d / f"episodes{a.suffix}.csv", index=False)
+    if a.exploratory:
+        (REPORTS / "exploratory").mkdir(parents=True, exist_ok=True)
+        note = ["", "Exploratory, detection only: this repository fails selection criteria 5–7 and is not a subject; "
+                "its numbers are reported for what they show about repair behaviour, never used for drafts.", ""]
+        (REPORTS / "exploratory" / f"{name}{a.suffix}.md").write_text("\n".join(lines[:2] + note + lines[2:]))
+        print("\n".join(lines[:16]))
+        print(f"-> {REPORTS / 'exploratory' / (name + a.suffix + '.md')}")
+        return
     (REPORTS / "awareness-gap-baseline").mkdir(parents=True, exist_ok=True)
     (REPORTS / "awareness-gap-baseline" / f"{name}{a.suffix}.md").write_text("\n".join(lines))
-    ep.to_csv(d / f"episodes{a.suffix}.csv", index=False)
     row = {"repo": repo, "variant": a.suffix or "head_strict", "sampled": len(samples), "stride": stride,
            "edges": ep[["contract", "edge_from", "edge_to"]].drop_duplicates().shape[0],
            "episodes_after_contract": len(post), "repaired": len(rep),
@@ -135,9 +144,10 @@ def main():
         w.writerows(old)
     sections = sorted((REPORTS / "awareness-gap-baseline").glob("*.md"))
     head = ["# Awareness-gap baseline (proxy run, Step 1c)", "",
-            "Strict HEAD record applied to sampled first-parent commits (every 25th plus commits whose message "
-            "names imports, layers, dependencies, cycles or refactoring). Exceptions in `ignore_imports` count as "
-            "violations. Pre-contract episodes are in the series but not in the gap.", "",
+            "Strict HEAD record applied to first-parent commits (every commit where the table says stride 1; "
+            "otherwise every 25th plus commits whose message names imports, layers, dependencies, cycles or "
+            "refactoring). Exceptions in `ignore_imports` count as violations. Pre-contract episodes are in the "
+            "series but not in the gap. Windowed runs (--since) start a month before the first contract.", "",
             "| Repository | Sampled | Edges | Episodes | Repaired | Median gap (commits / days) | Drops (C4) | Exception removals |",
             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     for r in old:

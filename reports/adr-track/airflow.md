@@ -1,0 +1,41 @@
+# ADR track: apache/airflow
+
+49 ADR files at `8cc830d4`; first added 2021-11-30, last 2026-10-19; 35 flagged structural by keyword screen (≥ 2 distinct terms) — the candidates for rule compilation.
+
+| Added | Title | Status | Structural terms |
+| --- | --- | --- | --- |
+| 2021-11-30 | [2. Implement standalone python command](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0002-implement-standalone-python-command.md) |  | dependencies interface package should not |
+| 2021-12-21 | [4. Using Docker images as test environment](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0004-using-docker-images-as-test-environment.md) |  | dependencies dependency modules package packages should not |
+| 2021-12-21 | [5. Preventing using contributed code when building images](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0005-preventing-using-contributed-code-when-building-images.md) |  | dependencies import packages should not |
+| 2022-02-15 | [8. Fixing group permissions before build](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0008-fixing-group-permissions-before-build.md) |  | layers modules packages |
+| 2022-04-06 | [3. Bootstrapping the virtual environment](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0003-bootstrapping-virtual-environment.md) |  | dependencies package should not |
+| 2022-04-06 | [10. Use pipx to install breeze](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0010-use-pipx-to-install-breeze.md) |  | dependencies package |
+| 2022-05-03 | [12. Asking user for confirmation](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0012-asking-user-for-confirmation.md) |  | dependencies should not |
+| 2025-01-25 | [2. Return common data structure from DBApiHook derived hooks](https://github.com/apache/airflow/blob/8cc830d4ef93/providers/common/sql/src/airflow/providers/common/sql/doc/adr/0002-return-common-data-structure-from-dbapihook-derived-hooks.md) |  | interface should not |
+| 2026-04-27 | [17. Run breeze from the current worktree's locked sources](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0017-use-uvx-to-run-breeze-from-local-sources.md) |  | dependencies dependency only through package |
+| 2026-06-03 | [1. Post-build bundle-packing options for the Go SDK](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0001-bundle-packing-options.md) |  | coupling dependency module package |
+| 2026-06-03 | [2. Use the Go 1.24 `tool` directive to deliver the bundle packer](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0002-use-go-tool-directive-for-bundle-packer.md) |  | depend dependency module must not package packages |
+| 2026-06-03 | [3. Dual-mode bundle binary: msgpack-over-IPC coordinator protocol alongside the existing go-plugin/Edge-Worker path](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0003-coordinator-protocol-msgpack-ipc.md) |  | depend dependency interface package |
+| 2026-06-03 | [4. Self-contained executable bundle (footer-embedded source and metadata)](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0004-self-contained-executable-bundle.md) |  | depend dependency layer layers package should not |
+| 2026-07-22 | [ADR-0001: Java SDK Airflow Integration](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0001-java-sdk-airflow-integration.md) |  | boundary import interface layer module modules package |
+| 2026-07-22 | [ADR-0002: Workload Execution — Language-Specific Task Execution](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0002-workload-execution.md) |  | boundary import interface layer module package |
+| 2026-07-22 | [ADR-0003: Pure Java DAGs — Build-Time Packaging and Code Visibility](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0003-pure-java-dags.md) |  | dependency interface layer |
+| 2026-07-22 | [ADR-0004: DAG Parsing — Language-Specific DAG File Processing](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0004-dag-parsing.md) |  | boundary dependencies interface layer module package |
+| 2026-07-22 | [ADR-0005: Coordinator Packaging, Module Layout, and Registration](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0005-coordinator-packaging.md) |  | import interface module modules package |
+| 2026-07-22 | [ADR-0006: No Lang-SDK Source Code Display for Mixed-Language (`@task.stub`) Dags](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0006-no-lang-sdk-source-display.md) |  | coupling interface |
+| 2026-08-12 | [ADR-0007: TaskFlow Across the Language Boundary](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0007-taskflow-across-language-boundary.md) |  | boundary dependency import |
+| 2026-08-20 | [5. Retire the Go Edge Worker](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0005-retire-go-edge-worker.md) |  | dependencies packages |
+| 2026-09-10 | [ADR-0001: Mixed-Lang Dag — TypeScript Task Handler Interface](https://github.com/apache/airflow/blob/8cc830d4ef93/ts-sdk/adr/0001-mixed-lang-dag-interface.md) |  | boundary import interface package |
+| 2026-09-10 | [ADR-0002: Native TypeScript Dag — Interface Design](https://github.com/apache/airflow/blob/8cc830d4ef93/ts-sdk/adr/0002-native-dag-interface.md) |  | boundary import interface module |
+| 2026-09-16 | [ADR-0008: Control-Flow Constructs in Lang SDKs](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0008-control-flow-constructs.md) |  | interface package |
+| 2026-09-16 | [ADR-0009: Provider Operators as Generated Lang-SDK DSL](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0009-provider-operators-as-generated-dsl.md) |  | import imports must not package |
+| 2026-09-16 | [ADR-0001: Mixed-Lang Dag — Java Task Interface](https://github.com/apache/airflow/blob/8cc830d4ef93/java-sdk/adr/0001-mixed-lang-dag-interface.md) |  | boundary depend interface package |
+| 2026-09-16 | [ADR-0002: Native Java Dag — Interface Design](https://github.com/apache/airflow/blob/8cc830d4ef93/java-sdk/adr/0002-native-dag-interface.md) |  | boundary dependencies dependency import imports interface |
+| 2026-09-18 | [6. Bundle registration and Mixed Lang task handlers](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0007-mixed-lang-task-handler-interface.md) |  | interface must not package packages |
+| 2026-09-18 | [7. Native Dag interface](https://github.com/apache/airflow/blob/8cc830d4ef93/go-sdk/adr/0008-native-dag-interface.md) |  | depend dependencies import interface package |
+| 2026-09-24 | [18. Raise the floors of fast-moving dependencies automatically](https://github.com/apache/airflow/blob/8cc830d4ef93/dev/breeze/doc/adr/0018-raise-dependency-floors-automatically.md) |  | boundary dependencies dependency must not package packages |
+| 2026-09-29 | [ADR-0010: Native Dag Processing — DagImporter Registration and Routing](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0010-native-dag-processing.md) |  | import importing interface must not |
+| 2026-09-29 | [ADR-0011: Mixed-Language Dag Processing — Task Handlers Are Not Dags](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0011-mixed-language-dag-processing.md) |  | boundary import interface layer |
+| 2026-09-29 | [ADR-0012: Lang-SDK Parse Protocol — Handler Messages and Coordinator Verbs](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0012-lang-sdk-parse-protocol.md) |  | boundary depend interface package |
+| 2026-09-29 | [ADR-0013: Persisted Task-Handler Bindings (Resolving Lang-SDK Artifacts at Parse Time)](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0013-persisted-task-handler-bindings.md) |  | coupling dependency import layer |
+| 2026-09-30 | [ADR-0015: Per-Dag Source in the Lang-SDK Bundle Artifact](https://github.com/apache/airflow/blob/8cc830d4ef93/airflow-core/adr/lang-sdk/0015-per-dag-source-in-bundle-artifact.md) |  | imports module |

@@ -2,10 +2,19 @@
 
 ```bash
 # Step 1a — screen candidates (criteria: docs/repo-selection.md)
+uv run python tools/reduce_longlist.py data/Step1_usable_repos_230.csv   # the team's sheet -> data/longlist.txt + longlist_decisions.csv
 uv run python tools/rawscan.py data/longlist.txt          # fast: contracts at the root, no clone
 uv run python tools/adrscan.py data/longlist.txt          # fast: common ADR folders
 uv run python tools/screen.py data/longlist.txt           # full screening -> data/candidates.csv
 tools/check_tests.sh OWNER/REPO '<install cmd>' '<test cmd>'   # criterion tests -> data/tests.csv
+
+# Steps 1b + 1c in one go (any OS; skips stages whose output exists; timings in data/REPO/timings.csv)
+uv run python tools/run_step1.py OWNER/REPO --every 1                              # every commit
+uv run python tools/run_step1.py OWNER/REPO --every 1 --since 2023-06-01           # large history: window
+uv run python tools/run_step1.py OWNER/REPO --config apps/backend/pyproject.toml --src apps/backend   # monorepo
+uv run python tools/run_step1.py OWNER/REPO --skip-proxy                            # ADR track: 1b + record only
+uv run python -m sarms.mining.adr_history data/raw/REPO "$BRANCH" data/REPO OWNER/REPO   # ADR track: dates, titles, structural flag
+uv run python tools/draw_sample.py OWNER/REPO [OWNER/REPO ...]                      # the seeded labelling samples (commit them)
 
 # Step 1b — mine the first-parent history (REPO = name without owner, clone in data/raw/REPO)
 BRANCH=$(git -C data/raw/REPO symbolic-ref --short refs/remotes/origin/HEAD | cut -d/ -f2)

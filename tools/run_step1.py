@@ -43,6 +43,7 @@ def main():
     ap.add_argument("--config", help="import-linter config path inside the repo (monorepos)")
     ap.add_argument("--src", nargs="*", help="source roots relative to the repo")
     ap.add_argument("--match", help="proxy_lint --match (message regex adding commits to the sample; '' = none)")
+    ap.add_argument("--exploratory", action="store_true", help="detection-only case: baseline report under reports/exploratory/")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--skip-proxy", action="store_true", help="1b + record only (ADR-track repositories)")
     a = ap.parse_args()
@@ -65,7 +66,7 @@ def main():
         match = ["--match", a.match] if a.match is not None else []
         rc |= run("proxy_lint", [*py, "sarms.replay.proxy_lint", str(d), branch, str(out), "--every", str(a.every), *since, *cfg, *src, *match], log)
     if not a.skip_proxy and (out / "checks_sample.parquet").exists():
-        rc |= run("baseline", [*py, "sarms.replay.baseline", str(out), a.owner_repo], log)
+        rc |= run("baseline", [*py, "sarms.replay.baseline", str(out), a.owner_repo, *(["--exploratory"] if a.exploratory else [])], log)
     sys.exit(1 if rc else 0)
 
 

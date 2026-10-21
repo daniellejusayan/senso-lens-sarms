@@ -1,0 +1,48 @@
+# ADR track: openedx/openedx-platform
+
+143 ADR files at `7f01c421`; first added 2018-02-03, last 2026-09-22; 42 flagged structural by keyword screen (≥ 2 distinct terms) — the candidates for rule compilation.
+
+| Added | Title | Status | Structural terms |
+| --- | --- | --- | --- |
+| 2018-02-03 | [0003-use-jwt-as-oauth-tokens-remove-openid-connect](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/oauth_dispatch/docs/decisions/0003-use-jwt-as-oauth-tokens-remove-openid-connect.rst) |  | dependency should not |
+| 2018-02-04 | [0007-include-organizations-in-tokens](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/oauth_dispatch/docs/decisions/0007-include-organizations-in-tokens.rst) |  | boundary layer |
+| 2019-05-06 | [0001-courses-in-lms](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0001-courses-in-lms.rst) |  | layer module |
+| 2019-05-06 | [0002-inter-app-apis](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0002-inter-app-apis.rst) |  | boundaries interface module only through should not |
+| 2020-05-04 | [0004-managing-django-settings](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0004-managing-django-settings.rst) |  | layers modules |
+| 2020-06-03 | [0001-extensions-to-inter-app-apis](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/content/learning_sequences/docs/decisions/0001-extensions-to-inter-app-apis.rst) |  | import package |
+| 2020-07-14 | [0005-studio-lms-subdomain-boundaries](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0005-studio-lms-subdomain-boundaries.rst) |  | boundaries import interface should not |
+| 2020-08-26 | [0006-role-of-xblock](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0006-role-of-xblock.rst) |  | import layer module |
+| 2020-09-23 | [0007-sys-path-modification-removal](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0007-sys-path-modification-removal.rst) |  | import importing imports module modules packages |
+| 2020-09-25 | [0004-waffle-util-namespacing](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/waffle_utils/docs/decisions/0004-waffle-util-namespacing.rst) |  | import interface |
+| 2021-10-05 | [##################################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/content_libraries/docs/decisions/0002-libraries-lti-provider.rst) |  | interface package |
+| 2021-10-07 | [. New features will be implemented without making calls to the Modulestore in the LMS.](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0011-limit-modulestore-use-in-lms.rst) |  | boundaries dependencies dependency import layer package should not |
+| 2022-06-20 | [. We've been trying to reduce the complexity of the stack needed to run Open edX.](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/xmodule/docs/decisions/0002-remove-mongodb-dependency.rst) |  | dependency interface |
+| 2022-07-26 | [#######################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0015-sub-project-dissolution.rst) |  | coupling dependencies import importing imports module modules package packages |
+| 2022-11-07 | [0001-add-external-id-mapping](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/content/docs/decisions/0001-add-external-id-mapping.rst) |  | interface should not |
+| 2023-03-03 | [0014-justifying-new-apps](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0014-justifying-new-apps.rst) |  | import importing imports should not |
+| 2023-03-10 | [###############################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0017-reimplement-asset-processing.rst) |  | dependencies dependency interface layers module modules package packages |
+| 2023-09-18 | [########################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/xmodule/docs/decisions/0003-library-content-block-schema.rst) |  | import interface |
+| 2023-10-25 | [#########################################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0019-oep-58-atlas-translations-design.rst) |  | module modules packages |
+| 2023-11-22 | [########################################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/xmodule/docs/decisions/0004-evaluate-wasm-safe-exec.rst) |  | dependency imports interface must not package packages |
+| 2023-12-15 | [0004-service-layer-for-contentstore-views](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/cms/djangoapps/contentstore/docs/decisions/0004-service-layer-for-contentstore-views.rst) |  | layer module modules should not |
+| 2024-02-01 | [#####################################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/content_libraries/docs/decisions/0003-course-content-independence.rst) |  | depend import should not |
+| 2024-03-22 | [###########################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/content/search/docs/decisions/0001-meilisearch.rst) |  | layer package |
+| 2024-09-16 | [#################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0020-upstream-downstream.rst) |  | import interface module |
+| 2024-12-18 | [#########################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0000-static-asset-plan.rst) |  | dependency layer |
+| 2025-02-27 | [#############################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0022-settings-simplification.rst) |  | coupling depend import imports layers module modules |
+| 2025-04-15 | [########################################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/xmodule/docs/decisions/0005-send-data-to-edx-submission.rst) |  | dependencies interface |
+| 2025-09-26 | [##########################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0024-course-component-types.rst) | Proposed | interface layer module modules |
+| 2025-12-15 | [6. Event-based XBlock Rendering for External Grader Integration](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/xmodule/docs/decisions/0006-xblock-rendering-for-external-grader-integration.rst) |  | coupling dependencies dependency |
+| 2026-01-08 | [0003-ora-api-spec](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/lms/djangoapps/instructor/docs/decisions/0003-ora-api-spec.rst) |  | coupling dependency interface |
+| 2026-03-17 | [###################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/openedx/core/djangoapps/authz/docs/decisions/0001-authz-django-integration-app.rst) |  | layer module modules |
+| 2026-04-14 | [##################################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0025-saml-admin-views-in-enterprise-plugin.rst) | Accepted | dependency imports layer should not |
+| 2026-05-06 | [#########################################](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0026-enterprise-decoupled-from-third-party-auth.rst) | Accepted | coupling dependency importing imports interface |
+| 2026-06-24 | [0027-standardize-api-documentation-and-schema-coverage](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0027-standardize-api-documentation-and-schema-coverage.rst) |  | dependency import imports layer package packages |
+| 2026-06-24 | [0028-migrate-restful-and-legacy-api-endpoints-using-standard-drf-viewsets](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0028-migrate-restful-and-legacy-api-endpoints-using-standard-drf-viewsets.rst) |  | layer module |
+| 2026-06-24 | [0029-standardize-error-responses](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0029-standardize-error-responses.rst) |  | depend dependency import layer module must not |
+| 2026-06-24 | [0030-ensure-get-requests-are-idempotent](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0030-ensure-get-requests-are-idempotent.rst) |  | depend must not |
+| 2026-06-24 | [0031-merge-similar-endpoints](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0031-merge-similar-endpoints.rst) |  | layer layers |
+| 2026-06-24 | [0032-standardize-pagination-usage](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0032-standardize-pagination-usage.rst) |  | boundaries import |
+| 2026-06-24 | [0035-canonical-mfe-configuration-endpoint](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0035-canonical-mfe-configuration-endpoint.rst) |  | depend layer module modules must not |
+| 2026-06-24 | [0036-normalize-deeply-nested-json-apis](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0036-normalize-deeply-nested-json-apis.rst) |  | coupling must not |
+| 2026-09-02 | [0038-standardize-rest-api-url-structure](https://github.com/openedx/openedx-platform/blob/7f01c42157d3/docs/decisions/0038-standardize-rest-api-url-structure.rst) |  | must not package |
