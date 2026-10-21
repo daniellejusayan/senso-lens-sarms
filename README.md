@@ -34,3 +34,4 @@ uv run pytest -q
 ```
 
 Step-by-step commands: `docs/runbook-commands.md`.
+Setting up and running on Windows, from install to the baseline report: `docs/how-to-run.md`.
