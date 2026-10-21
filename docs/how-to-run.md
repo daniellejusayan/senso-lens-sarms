@@ -121,7 +121,7 @@ uv run python tools/run_step1.py kedro-org/kedro --every 1
 ```
 
 The argument is the GitHub `OWNER/REPO`. The runner clones into `data/raw/kedro` if the clone is
-missing (a partial, blob-less clone, so the first run needs network), then runs four stages in
+missing (a partial, blob-less clone, so the first run needs network), then runs five stages in
 order. A stage is skipped when its output already exists, so re-running after an interruption
 is cheap. Timings are from the kedro run of 1,957 commits.
 
@@ -129,10 +129,14 @@ is cheap. Timings are from the kedro run of 1,957 commits.
    Author e-mails are replaced by a salted hash, so this stage needs `.salt`. 3 seconds.
 2. **record_history** freezes the import-linter contracts at each commit into
    `data/kedro/record/`. 60 seconds.
-3. **proxy_lint** checks out sampled commits in a reused worktree and runs import-linter
+3. **graph** extracts the import graph at HEAD into `data/kedro/graph/<sha12>/`: every import
+   statement, every module with its fan-in and cycle id, the package roll-up, and
+   `summary.json` with the cycle and hub numbers. 23 seconds. It needs an import-linter
+   record at HEAD or `--root PACKAGE`; with neither it is skipped with a note.
+4. **proxy_lint** checks out sampled commits in a reused worktree and runs import-linter
    against the HEAD contracts, writing `checks_sample.parquet` and `violations_sample.parquet`.
    22 minutes with `--every 1`; a couple of minutes at the default stride of 25.
-4. **baseline** builds the report from section 4. 1 second.
+5. **baseline** builds the report from section 4. 1 second.
 
 Options you will actually use:
 
@@ -145,6 +149,7 @@ Options you will actually use:
 | `--config PATH --src DIR` | monorepos whose import-linter config is not at the root | `--config apps/backend/pyproject.toml --src apps/backend` |
 | `--exploratory` | detection-only case; the report goes under `reports/exploratory/` and stays out of the summary | `--exploratory` |
 | `--match REGEX` | also sample commits whose message matches; `''` adds none | `--match ''` |
+| `--root PACKAGE` | repositories with no import-linter record at HEAD, so the graph stage knows which package to parse | `--root airflow` |
 
 The other Step 1 tools, for screening the longlist, the ADR track and drawing the labelling
 samples, are listed with their commands in `docs/runbook-commands.md`. Those lines are written
@@ -160,6 +165,7 @@ the reports are in git, the data travels in the team's data pack zip (see `data/
 | `data/raw/REPO/` | run_step1 or screen.py | no | the partial clone, plus `REPO.wt` (one reused worktree) and `REPO.ilcache` (grimp's cache) |
 | `data/REPO/commits.parquet` | first_parent | no | the first-parent chain: idx, sha, timestamps, salted author hash, file counts, message, PR number |
 | `data/REPO/record/` | record_history | no | `importlinter.HEAD.toml`, `contracts.csv`, `events.parquet` (contracts added, removed, changed) |
+| `data/REPO/graph/<sha12>/` | graph | no | the whole import graph of that commit: `edges.csv`, `modules.csv` with fan-in and cycle id, `packages.csv`, `packages.dot`, `summary.json` |
 | `data/REPO/checks_sample.parquet`, `violations_sample.parquet`, `sample.csv` | proxy_lint | no | one row per commit and contract; one row per violating edge |
 | `data/REPO/episodes.csv` | baseline | no | violation episodes: introduced at, repaired at, gap |
 | `data/REPO/<stage>.log`, `timings.csv` | run_step1 | no | each stage's full output; seconds and exit code per stage |

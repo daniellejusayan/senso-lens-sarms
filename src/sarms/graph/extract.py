@@ -89,6 +89,7 @@ def main():
         if not wt.exists():
             git(repo, "worktree", "add", "--detach", "-f", str(wt.resolve()), sha)
         git(wt, "checkout", "-q", "--force", sha)
+        git(wt, "clean", "-fdq")  # the replay shares this worktree; its leftovers must not become modules here
 
     files = [a.config] if a.config else IL_FILES
     fname, text = find_il_config(repo, sha, files)

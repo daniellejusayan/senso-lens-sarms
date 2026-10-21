@@ -4,8 +4,10 @@
     uv run python tools/run_step1.py LibrePhotos/librephotos --config apps/backend/pyproject.toml --src apps/backend
     uv run python tools/run_step1.py PostHog/posthog --since 2026-03-01 --every 1          # exploratory
 
-Runs: first_parent (1b) -> record_history (1c) -> proxy_lint (1c, strict HEAD record) ->
-baseline (1c). The clone is data/raw/REPO (made by tools/screen.py; made here if missing).
+Runs: first_parent (1b) -> record_history (1c) -> graph (the import graph at HEAD, Monitor) ->
+proxy_lint (1c, strict HEAD record) -> baseline (1c). The clone is data/raw/REPO (made by
+tools/screen.py; made here if missing). The graph stage reads the root package from the
+import-linter record at HEAD, or from --root PACKAGE; with neither it is skipped with a note.
 Each stage is skipped when its output exists unless --force. Timings go to data/REPO/timings.csv.
 Use --since for very large repositories (a month before the first contract; record_history
 prints that date).
@@ -19,7 +21,7 @@ import sys
 import time
 from pathlib import Path
 
-from sarms.mining.common import ensure_clone, repo_name, resolve_ref
+from sarms.mining.common import IL_FILES, ensure_clone, find_il_config, git, repo_name, resolve_ref
 
 
 def run(label, cmd, log):
@@ -46,23 +48,32 @@ def main():
     ap.add_argument("--exploratory", action="store_true", help="detection-only case: baseline report under reports/exploratory/")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--skip-proxy", action="store_true", help="1b + record only (ADR-track repositories)")
+    ap.add_argument("--root", nargs="*", help="graph stage: root package(s) when HEAD has no import-linter record")
     a = ap.parse_args()
     name = repo_name(a.owner_repo)
     d = ensure_clone(a.owner_repo, checkout=False)
-    branch = resolve_ref(d).split("/", 1)[1]
+    ref = resolve_ref(d)
+    branch = ref.split("/", 1)[1]
+    head = git(d, "rev-parse", ref).strip()
     out = Path("data") / name
     out.mkdir(parents=True, exist_ok=True)
     log = out / "timings.csv"
     py = [sys.executable, "-m"]
     since = ["--since", a.since] if a.since else []
     cfg = ["--config", a.config] if a.config else []
+    src = ["--src", *a.src] if a.src else []
     rc = 0
     if a.force or not (out / "commits.parquet").exists():
         rc |= run("first_parent", [*py, "sarms.mining.first_parent", str(d), branch, str(out / "commits.parquet")], log)
     if a.force or not (out / "record" / "events.parquet").exists():
         rc |= run("record_history", [*py, "sarms.rules.record_history", str(d), branch, str(out / "record"), *since, *cfg], log)
+    if a.force or not (out / "graph" / head[:12] / "summary.json").exists():
+        if a.root or find_il_config(d, head, [a.config] if a.config else IL_FILES)[0]:
+            root = ["--root", *a.root] if a.root else []
+            rc |= run("graph", [*py, "sarms.graph.extract", str(d), "--sha", head, *cfg, *src, *root], log)
+        else:
+            print(f"== graph: skipped, no import-linter record at {head[:8]}; pass --root PACKAGE", flush=True)
     if not a.skip_proxy and (a.force or not (out / "checks_sample.parquet").exists()):
-        src = ["--src", *a.src] if a.src else []
         match = ["--match", a.match] if a.match is not None else []
         rc |= run("proxy_lint", [*py, "sarms.replay.proxy_lint", str(d), branch, str(out), "--every", str(a.every), *since, *cfg, *src, *match], log)
     if not a.skip_proxy and (out / "checks_sample.parquet").exists():

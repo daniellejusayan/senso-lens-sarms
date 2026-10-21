@@ -8,11 +8,12 @@ uv run python tools/adrscan.py data/longlist.txt          # fast: common ADR fol
 uv run python tools/screen.py data/longlist.txt           # full screening -> data/candidates.csv
 tools/check_tests.sh OWNER/REPO '<install cmd>' '<test cmd>'   # criterion tests -> data/tests.csv
 
-# Steps 1b + 1c in one go (any OS; skips stages whose output exists; timings in data/REPO/timings.csv)
+# Steps 1b + 1c in one go, plus the HEAD import graph (any OS; skips stages whose output exists; timings in data/REPO/timings.csv)
 uv run python tools/run_step1.py OWNER/REPO --every 1                              # every commit
 uv run python tools/run_step1.py OWNER/REPO --every 1 --since 2023-06-01           # large history: window
 uv run python tools/run_step1.py OWNER/REPO --config apps/backend/pyproject.toml --src apps/backend   # monorepo
 uv run python tools/run_step1.py OWNER/REPO --skip-proxy                            # ADR track: 1b + record only
+uv run python tools/run_step1.py OWNER/REPO --skip-proxy --root PACKAGE             # ADR track with the HEAD graph (no import-linter record)
 uv run python -m sarms.mining.adr_history data/raw/REPO "$BRANCH" data/REPO OWNER/REPO   # ADR track: dates, titles, structural flag
 uv run python -m sarms.graph.extract data/raw/REPO [--sha SHA]                      # the import graph of one commit -> data/REPO/graph/<sha>/
 uv run python tools/draw_sample.py OWNER/REPO [OWNER/REPO ...]                      # the seeded labelling samples (commit them)
