@@ -71,19 +71,35 @@ def prepare(opts, strict: bool):
     return session, contracts
 
 
+def uses_missing(c, missing):
+    """True when a contract names a module whose root package is not in this tree."""
+    mods = [m for k in ("source_modules", "forbidden_modules", "modules", "layers", "containers")
+            for m in (c.get(k) if isinstance(c.get(k), list) else [c.get(k)] if c.get(k) else [])]
+    return any(str(m).split(".")[0].strip("() ") in missing for m in mods)
+
+
 def pythonpath(wt: Path, roots, override=None):
+    """(paths, missing_roots): where each root package lives in the worktree. Searches the root,
+    src/, python/, lib/, and one level under packages/, libs/, apps/ and */src (monorepos such as
+    PostHog's packages/owners-yaml/owners_yaml). A root that is nowhere is reported, not fatal."""
     if override:
-        return [str(wt / p) for p in override]
-    paths = []
+        return [str(wt / p) for p in override], []
+    bases = [wt / "src", wt, wt / "python", wt / "lib"]
+    for group in ("packages", "libs", "apps"):
+        g = wt / group
+        if g.is_dir():
+            bases += [d for d in sorted(g.iterdir()) if d.is_dir()] + [d / "src" for d in sorted(g.iterdir()) if (d / "src").is_dir()]
+    bases += [d / "src" for d in sorted(wt.iterdir()) if d.is_dir() and (d / "src").is_dir()]
+    paths, missing = [], []
     for r in roots:
         top = r.split(".")[0]
-        for base in (wt / "src", wt, wt / "python", wt / "lib"):
+        for base in bases:
             if (base / top).is_dir() or (base / f"{top}.py").exists():
                 paths.append(str(base))
                 break
         else:
-            return None
-    return list(dict.fromkeys(paths))
+            missing.append(top)
+    return list(dict.fromkeys(paths)), missing
 
 
 def main():
@@ -138,13 +154,18 @@ def main():
                 continue
             session, contracts = prepare(o, strict)
         base = {"idx": idx, "sha": sha, "ts": ts}
-        pp = pythonpath(wt.resolve(), session["root_packages"], a.src)
-        if pp is None:
-            for c in contracts:
+        pp, missing = pythonpath(wt.resolve(), session["root_packages"], a.src)
+        # contracts whose source or forbidden modules live only in a root that is not in this tree
+        # are recorded as package_missing; the others are still checked with the roots that exist
+        run_contracts = [c for c in contracts if not uses_missing(c, missing)]
+        for c in contracts:
+            if c not in run_contracts:
                 checks.append({**base, "contract": c["name"], "type": c["type"], "status": "package_missing",
-                               "error": "", "n_violations": 0, "n_routes": 0})
+                               "error": f"missing root(s): {' '.join(missing)}", "n_violations": 0, "n_routes": 0})
+        if not pp or not run_contracts:
             continue
-        spec = {"pythonpath": pp, "session_options": session, "contracts": contracts, "cache_dir": str(cache)}
+        session_here = {**session, "root_packages": [r for r in session["root_packages"] if r.split(".")[0] not in missing]}
+        spec = {"pythonpath": pp, "session_options": session_here, "contracts": run_contracts, "cache_dir": str(cache)}
         try:
             p = subprocess.run([sys.executable, str(WORKER)], input=json.dumps(spec), capture_output=True,
                                text=True, timeout=a.timeout, cwd=wt)
@@ -152,7 +173,7 @@ def main():
         except subprocess.TimeoutExpired:
             res = {"graph_error": "timeout"}
         if "graph_error" in res:
-            for c in contracts:
+            for c in run_contracts:
                 checks.append({**base, "contract": c["name"], "type": c["type"], "status": "graph_error",
                                "error": res["graph_error"], "n_violations": 0, "n_routes": 0})
         else:

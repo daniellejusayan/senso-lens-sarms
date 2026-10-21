@@ -46,6 +46,9 @@ def episodes(checks, viols, intro):
             rows.append((c, f, t, *cur, None, None, None))
     ep = pd.DataFrame(rows, columns=["contract", "edge_from", "edge_to", "start_idx", "start_ts", "start_sha",
                                      "end_idx", "end_ts", "end_sha"])
+    if ep.empty:
+        ep = pd.DataFrame(columns=[*ep.columns, "repaired", "gap_commits", "gap_days", "pre_contract"])
+        return ep.astype({"repaired": bool, "pre_contract": bool})
     ep["start_ts"] = pd.to_datetime(ep.start_ts, utc=True)
     ep["end_ts"] = pd.to_datetime(ep.end_ts, utc=True)
     ep["end_idx"] = pd.to_numeric(ep.end_idx)
