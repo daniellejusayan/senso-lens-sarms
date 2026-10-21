@@ -1,0 +1,5 @@
+# keep LF in the repository on every OS; Windows checkouts otherwise re-write generated CSV/MD with CRLF and show them as modified
+* text=auto eol=lf
+*.parquet binary
+*.png binary
+*.zip binary
