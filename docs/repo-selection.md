@@ -74,30 +74,59 @@ every commit, has only 4 drops in seven years plus 3 commits that removed an exc
 contracts run in CI (pre-commit), so violations rarely reach main. That is likely to hold for
 every repository that enforces its contracts.
 
-## Decision for Wednesday 21 Oct: criterion 4
+## Decision taken 21 Oct 2026: criterion 4
 
-Run `proxy_lint --every 1` on napari, checkov and sqlfluff on Tuesday so the call has exact
-numbers, then choose one, and record it below as an amendment:
+The every-commit replays (strict HEAD record, `reports/awareness-gap-baseline.md`) settle it
+with exact numbers. Drops in the violation count after the contract: kedro 4, checkov 6,
+wemake-python-styleguide 3, sqlfluff 1, faststream 3; exception-removal commits 3, 5, 3, 0, 0.
+No repository on the longlist reaches 20, and the mechanism is clear from the series: once a
+contract runs in CI, violations rarely reach the default branch at all — what stands for years
+is the *acknowledged* debt in `ignore_imports` (kedro: 9 violating edges at HEAD behind 6
+exceptions, the oldest since July 2020), and the repair events are the few commits that remove
+an exception or the clean-up that accompanies the contract's arrival (checkov: 24 edges
+removed on 2023-08-15, nine days after the first contract; sqlfluff: the same on 2023-08-29
+and 2023-10-25).
 
-| Option | What changes | Effect on the seed set |
+Option taken: **C — report, don't select on it**, plus one **detection-only** subject that
+fails criteria 5–7 (PostHog, option A's candidate) so that RQ1 and RQ3 have enough deviations to
+judge. Criterion 4 stays in the table as a measured finding and is the first result of Part 2 of
+the paper: human repairs of recorded architectural debt are rare and slow (kedro median 92
+commits / 156 days; 9 of 28 episodes never repaired).
+
+Criterion 3 (tests under 10 minutes) is still pending for every repository: `tools/check_tests.sh`
+installs and runs each suite, which this week's machine time went to the replays instead. It
+runs on a team laptop before Friday; a primary that fails it swaps with the first reserve.
+
+## Selected (21 Oct 2026; confirm with the advisor on Friday 23 Oct)
+
+| Repository | Role | Rationale |
 | --- | --- | --- |
-| A. Keep ≥ 20 | add one repair-rich subject for detection only (RQ1, RQ3), relaxing 5–7 for it | PostHog (58 exception-removal commits since Apr 2026) or edx-platform (9, and 143 ADRs) joins kedro/napari/checkov |
-| B. Count both kinds of repair, ≥ 10 | drops in the strict violation count (every commit) + commits that remove an exception | kedro 4 + 3 = 7 still fails; napari and checkov unknown until Tuesday |
-| C. Report, don't select on it | criterion 4 becomes a measured finding; selection uses 1–3, 5–8 | kedro, napari, checkov selected; the low repair counts become a result |
-
-Recommendation: C for the three primary subjects plus A's detection-only subject, because
-the evaluation needs deviations to judge (100 for precision), and enforced contracts produce
-few. Ask Ajarn on Wednesday whether a detection-only subject that fails 5–7 is acceptable.
-
-## Selected (fill on Wednesday, confirm on Friday)
-
-| Repository | Role (primary / reserve / detection-only) | One paragraph of rationale |
-| --- | --- | --- |
+| kedro-org/kedro | primary (contracts) | 4 contracts since 2019-08, enforced in pre-commit; 1,957 first-parent commits, 57k lines, Apache-2.0, ~94% Python. The richest repair history on the list: 16 violating edges, 28 episodes, 19 repaired, median gap 92 commits / 156 days, 9 still open. Replay of every commit takes 5 minutes. |
+| bridgecrewio/checkov | primary (contracts) | 6 contracts since 2023-08 (13 exceptions at HEAD), 13,941 commits, 247k lines, Apache-2.0, ~95% Python. Shows the contract-adoption pattern: 24 violating edges cleaned up nine days after the first contract, 5 exception-removal commits since; large enough that a per-push loop is tested at scale. Replayed from 2023-06 (2,695 commits, ~1 hour). |
+| wemake-services/wemake-python-styleguide | primary (contracts) | 6 contracts since 2019-07 — the longest-enforced record on the list — 3,148 commits, 57k lines, MIT, ~100% Python; a linter whose own layering is a contract. Few violations (5 edges; 1 post-contract episode, repaired in 14 days) make it the clean control: the system should mostly stay silent here. |
+| sqlfluff/sqlfluff | reserve 1 (contracts) | 4 contracts since 2023-08, 4,593 commits, 195k lines, MIT; criterion 5 borderline (~86% Python by file size — dialect SQL fixtures; re-check with `gh api .../languages` on a laptop). 8 edges, 3 post-contract episodes, none repaired yet (5 standing at HEAD). |
+| ag2ai/faststream | reserve 2 (contracts) | 8 contracts, but written 2026-09-20 with 17 exceptions, so there is one month of post-contract history; 80 violating edges before that date under the strict record. Useful for the "record written to legalise the existing structure" case (documentation lag), not for the awareness gap yet. |
+| ramses-rf/ramses_rf, Qiskit/qiskit-serverless | reserve 3, 4 (contracts) | pass criteria 1, 2, 5–8; contracts since 2026-06 and 2026-02; replays in progress at the time of writing (`data/<repo>/timings.csv`). |
+| GridTools/gt4py | primary (ADR track) | 51 ADRs, 21 flagged structural by the keyword screen (imports, circular dependencies, module boundaries), 1,811 commits, 187k lines, BSD-3, ~93% Python. The repository on which the rule compiler's compilable fraction (RQ1) is measured against ADR text rather than contracts. |
+| apache/airflow | reserve (ADR track) | 49 ADRs since 2021-11, 35 structural; 40,198 commits — too large to replay this term, used for the compilable-fraction study only. |
+| xorq-labs/xorq, UKGovernmentBEIS/inspect_evals | reserve (ADR track) | 21 and 10 ADRs, young records (2026); pass 1, 2, 5–8. |
+| PostHog/posthog | detection-only, exploratory | fails 5–7 (TypeScript-heavy monorepo, 585k+ lines, MIT + `ee/` licence) and is kept apart (`reports/exploratory/`); 6 contracts since 2026-04-15 with 189 exceptions standing at HEAD (481 added, 292 removed in 59 commits in six months) — the repair-rich history the primaries lack, for RQ1/RQ3 statistics only, never for drafts. |
+| openedx/openedx-platform | example source only | 143 ADRs and 4 contracts, AGPL-3.0; fails 5–7. Not a subject; ADR 0002 "Inter-app APIs" supplies the vocabulary's MISSING example. |
 
 ## Rejected
 
-Every rejected candidate keeps its reason in data/candidates.csv (column `reason`).
+Every rejected longlist row keeps its rule and reason in `data/longlist_decisions.csv`; every
+screened repository keeps its measured criteria in `data/candidates.csv` (`criteria_met`).
+Notable near misses: nolar/kopf (11 contracts since 2021, but a rebased history of 564
+first-parent commits fails criterion 2); LibrePhotos, endurain, geti, blueking-* (contracts in a
+backend sub-package of a TypeScript-heavy monorepo: criterion 5); mixle (714k lines: 6); PyTCP,
+Carvera (GPL: 7); the 44 personal repositories under R4.
 
 ## Amendments
 
-(none yet)
+- 2026-10-21 — Criterion 4 (≥ 20 violation-reducing commits) is reported, not selected on
+  (option C above); a detection-only subject that fails 5–7 is admitted for RQ1/RQ3 statistics.
+  Reason: no repository with enforced contracts reaches 20; the mechanism is recorded above.
+- 2026-10-21 — Criterion 1's ADR arm is measured as "ADR files in a decisions folder at HEAD",
+  dated by the first-parent commit that added the file (a folder move resets the date: gt4py's
+  51 ADRs all date from the 2025-04-11 move to `docs/development/ADRs/`).
