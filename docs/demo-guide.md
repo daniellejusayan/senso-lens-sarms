@@ -113,7 +113,7 @@ fixes arrived by merge.
 ## Step 4 — "We check old versions against the team's own rules" (about 20–30 seconds)
 
 ```powershell
-uv run python -m sarms.replay.proxy_lint data/raw/kedro main data/demo --every 200 --match ""
+uv run python -m sarms.replay.proxy_lint data/raw/kedro main data/demo --every 200 --match=
 ```
 
 **You should see** something like
