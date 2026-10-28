@@ -30,6 +30,6 @@ jobs:
           range="${{ github.event.before }}..${{ github.sha }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then range="origin/${{ github.base_ref }}..HEAD"; fi
           if ! git rev-parse -q --verify "${{ github.event.before }}" >/dev/null 2>&1; then range="HEAD"; fi
-          bad=$(git log --format='%H %an <%ae> | %cn <%ce>%n%b' "$range" | grep -i -E 'co-authored-by:.*(claude|anthropic)|@anthropic\.com|claude-session:|sarms@users\.noreply|<sarms@' || true)
+          bad=$(git log --format='%H %an <%ae> | %cn <%ce>%n%b' "$range" | grep -i -E 'co-authored-by:.*(claude|anthropic)|@anthropic\.com|claude-session:|(^|[<[:space:]])sarms@' || true)
           if [ -n "$bad" ]; then echo "attribution check failed:"; echo "$bad"; exit 1; fi
           echo "attribution ok for $range"

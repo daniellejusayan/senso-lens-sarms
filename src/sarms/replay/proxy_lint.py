@@ -38,37 +38,22 @@ from pathlib import Path
 
 import pandas as pd
 
-from sarms.mining.common import IL_FILES, find_il_config, first_parent, git, read_il_options, resolve_ref
+from sarms.mining.common import (
+    IL_FILES,
+    find_il_config,
+    first_parent,
+    git,
+    normalize_contracts,
+    read_il_options,
+    resolve_ref,
+)
 
 WORKER = Path(__file__).with_name("_lint_worker.py")
 DEFAULT_MATCH = r"import|layer|architect|depend|circular|cycle|boundar|refactor"
 
 
-def optional_layers(layers):
-    out = []
-    for line in layers:
-        parts = re.split(r"(\s*[|:]\s*)", line.strip())
-        out.append("".join(p if re.fullmatch(r"\s*[|:]\s*", p) or p.startswith("(") or not p
-                           else f"({p})" for p in parts))
-    return out
-
-
 def prepare(opts, strict: bool):
-    contracts = []
-    for c in opts.contracts_options:
-        c = dict(c)
-        if strict:
-            c.pop("ignore_imports", None)
-        c["unmatched_ignore_imports_alerting"] = "none"
-        if c.get("type") == "layers" and c.get("layers"):
-            lay = c["layers"] if isinstance(c["layers"], list) else [x for x in str(c["layers"]).splitlines() if x.strip()]
-            c["layers"] = optional_layers(lay)
-        c.setdefault("name", c.get("id", "?"))
-        contracts.append(c)
-    session = dict(opts.session_options)
-    if "root_packages" not in session:
-        session["root_packages"] = [session.pop("root_package")]
-    return session, contracts
+    return normalize_contracts(opts, strict)
 
 
 def uses_missing(c, missing):

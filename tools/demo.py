@@ -4,7 +4,8 @@
     uv run python tools/demo.py checkov
 
 Reads only: data/REPO/commits.parquet, record/contracts.csv, record/events.parquet,
-violations_sample.parquet, episodes.csv and graph/*/summary.json. Writes nothing, so it is safe
+violations_sample.parquet, episodes.csv, graph/*/summary.json and, when the loop has run,
+rms/differ/*/differ.json and rms/drafts/*/result.json. Writes nothing, so it is safe
 to run in front of anyone. Each section says which file the numbers come from.
 """
 from __future__ import annotations
@@ -84,6 +85,26 @@ def main():
                   f"{s['cycles']} cycle(s) (largest {s['largest_cycle']} modules)")
             if s.get("top_level_unassigned"):
                 print(f"      packages no rule mentions: {', '.join(m.split('.')[-1] for m in s['top_level_unassigned'])}")
+
+    runs = sorted((d / "rms" / "differ").glob("*/differ.json")) if (d / "rms" / "differ").exists() else []
+    if runs:
+        head(f"6. THE LIVE LOOP - what the system itself says today      (data/{a.repo}/rms/)")
+        r = json.loads(max(runs, key=lambda p: p.stat().st_mtime).read_text())
+        viol = [x for x in r["rows"] if x["label"] != "CONFIRMED"]
+        print(f"  rules compiled from the team's contracts, checked on commit {r['sha'][:8]} in {r.get('seconds', '?')} s:")
+        print(f"  {len(viol)} broken rules ({sum(x['acknowledged'] for x in viol)} on the team's 'ignore this' list), "
+              f"{sum(x['direct'] for x in viol)} direct, {r['summary'].get('confirmed', 0)} imports confirmed as allowed")
+        for x in viol:
+            if x["direct"]:
+                print(f"    direct: {x['edge_from']} -> {x['edge_to']}  ({len(x['lines'])} import line(s) in {x['lines'][0]['edge'].split('->')[0] if x['lines'] else '?'})")
+        drafts = sorted((d / "rms" / "drafts").glob("*/result.json")) if (d / "rms" / "drafts").exists() else []
+        for f in drafts:
+            res = json.loads(f.read_text())
+            v = res["violation"]
+            last = res["attempts"][-1] if res["attempts"] else {}
+            model = (last.get("model") or {}).get("model", res["class"])
+            print(f"  draft {f.parent.name}: {v['edge_from']} -> {v['edge_to']} by {model}: {res['verdict']} "
+                  f"after {res['tries']} attempt(s)" + (f"; {last['problems'][0][:90]}" if last.get("problems") else ""))
     print()
 
 

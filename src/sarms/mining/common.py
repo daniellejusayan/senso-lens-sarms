@@ -66,7 +66,9 @@ def resolve_ref(repo_dir, branch: str | None = None) -> str:
         ref = git(repo_dir, "symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD", check=False).strip()
         if not ref:
             git(repo_dir, "remote", "set-head", "origin", "--auto", check=False)
-            ref = git(repo_dir, "symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD").strip()
+            ref = git(repo_dir, "symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD", check=False).strip()
+        if not ref:  # no remote (a local repository, the Term 2 CI checkout): the current branch
+            ref = git(repo_dir, "symbolic-ref", "-q", "--short", "HEAD", check=False).strip() or "HEAD"
         return ref
     if git(repo_dir, "rev-parse", "-q", "--verify", f"origin/{branch}", check=False).strip():
         return f"origin/{branch}"
@@ -153,3 +155,48 @@ def as_list(v):
     if isinstance(v, str):
         return [x.strip() for x in v.splitlines() if x.strip()]
     return list(v)
+
+
+# ---- import-linter contract normalisation (shared by the replay, the rule compiler and the Differ)
+
+def optional_layers(layers):
+    """Wrap every layer name in parentheses (import-linter's optional-layer syntax) so a contract
+    can be checked at commits where some layers do not exist yet."""
+    out = []
+    for line in layers:
+        parts = re.split(r"(\s*[|:]\s*)", str(line).strip())
+        out.append("".join(p if re.fullmatch(r"\s*[|:]\s*", p) or p.startswith("(") or not p
+                           else f"({p})" for p in parts))
+    return out
+
+
+def normalize_contracts(opts, strict: bool):
+    """(session_options, contracts) ready for the lint worker. strict=True removes every
+    ignore_imports entry (the strict record); layers are made optional either way; a contract
+    without a name gets its id."""
+    contracts = []
+    for c in opts.contracts_options:
+        c = dict(c)
+        if strict:
+            c.pop("ignore_imports", None)
+        c["unmatched_ignore_imports_alerting"] = "none"
+        if c.get("type") == "layers" and c.get("layers"):
+            c["layers"] = optional_layers(as_list(c["layers"]))
+        c.setdefault("name", c.get("id", "?"))
+        contracts.append(c)
+    session = dict(opts.session_options)
+    if "root_packages" not in session:
+        session["root_packages"] = [session.pop("root_package")]
+    return session, contracts
+
+
+def module_matches(pattern: str, module: str) -> bool:
+    """Does `module` fall under `pattern`? A plain dotted name matches itself and its
+    descendants (import-linter's reading of a contract module); `*` matches one dotted level
+    and `**` any depth (rules.schema.yaml)."""
+    pattern, module = pattern.strip(), module.strip()
+    if "*" not in pattern:
+        return module == pattern or module.startswith(pattern + ".")
+    rx = "".join("[^.]+" if t == "*" else ".+" if t == "**" else re.escape(t)
+                 for t in re.split(r"(\*\*|\*)", pattern) if t)
+    return re.fullmatch(rx, module) is not None or re.fullmatch(rx + r"\..+", module) is not None

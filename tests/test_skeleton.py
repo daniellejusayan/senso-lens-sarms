@@ -6,7 +6,8 @@ import sys
 
 def test_modules_import():
     for m in ("sarms.mining.common", "sarms.mining.first_parent", "sarms.rules.record_history",
-              "sarms.replay.proxy_lint", "sarms.replay.baseline", "sarms.graph.extract"):
+              "sarms.replay.proxy_lint", "sarms.replay.baseline", "sarms.rules.compile", "sarms.differ.diff",
+              "sarms.differ.replay", "sarms.ledger.build", "sarms.synthesize.llm", "sarms.synthesize.draft"):
         importlib.import_module(m)
 
 

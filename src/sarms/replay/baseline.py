@@ -26,37 +26,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from sarms.ledger.episodes import episodes
 from sarms.mining.common import REPORTS
-
-
-def episodes(checks, viols, intro):
-    ok = checks[checks.status.isin(["kept", "broken"])][["contract", "idx", "ts", "sha"]].sort_values("idx")
-    present = set(zip(viols.contract, viols.edge_from, viols.edge_to, viols.idx, strict=True))
-    rows = []
-    for c, f, t in viols[["contract", "edge_from", "edge_to"]].drop_duplicates().itertuples(index=False):
-        cur = None
-        for idx, ts, sha in zip(*(ok[ok.contract == c][k] for k in ("idx", "ts", "sha")), strict=True):
-            here = (c, f, t, idx) in present
-            if here and cur is None:
-                cur = (idx, ts, sha)
-            elif not here and cur is not None:
-                rows.append((c, f, t, *cur, idx, ts, sha))
-                cur = None
-        if cur is not None:
-            rows.append((c, f, t, *cur, None, None, None))
-    ep = pd.DataFrame(rows, columns=["contract", "edge_from", "edge_to", "start_idx", "start_ts", "start_sha",
-                                     "end_idx", "end_ts", "end_sha"])
-    if ep.empty:
-        ep = pd.DataFrame(columns=[*ep.columns, "repaired", "gap_commits", "gap_days", "pre_contract"])
-        return ep.astype({"repaired": bool, "pre_contract": bool})
-    ep["start_ts"] = pd.to_datetime(ep.start_ts, utc=True)
-    ep["end_ts"] = pd.to_datetime(ep.end_ts, utc=True)
-    ep["end_idx"] = pd.to_numeric(ep.end_idx)
-    ep["repaired"] = ep.end_idx.notna()
-    ep["gap_commits"] = ep.end_idx - ep.start_idx
-    ep["gap_days"] = (ep.end_ts - ep.start_ts).dt.total_seconds() / 86400
-    ep["pre_contract"] = [s < intro[c] if c in intro else False for c, s in zip(ep.contract, ep.start_ts, strict=True)]
-    return ep
 
 
 def stat(s):
