@@ -32,8 +32,13 @@ rms = data / "rms"
 if not raw.exists() or not (data / "violations_sample.parquet").exists():
     sys.exit(f"need data/raw/{name} and data/{name}/violations_sample.parquet first (tools/run_step1.py)")
 
-out, rules, errors = compile_repo(raw, config=a.config, out_dir=rms / "rules", repo_label=name)
+# compare like with like: the rules as they were, and the chain as it was, at the saved replay's last commit
+v_old = pd.read_parquet(data / "violations_sample.parquet")
+last = pd.read_csv(data / "sample.csv").sort_values("idx").iloc[-1].sha if (data / "sample.csv").exists() \
+    else v_old.sort_values("idx").iloc[-1].sha
+out, rules, errors = compile_repo(raw, sha=last, config=a.config, out_dir=rms / "rules", repo_label=name)
 ok = True
+print(f"     replay ends at {last[:12]}, the saved replay's last commit")
 
 
 def check(what, got, want):
@@ -47,8 +52,7 @@ check("rules validate against the schema", len(errors), 0)
 print(f"     {len(rules)} rules compiled from {len({r['source']['id'] for r in rules})} contracts -> {out}")
 
 frames = replay(raw, a.branch, rms, rms / "rules", every=25 if a.quick else 1, src=a.src, config=a.config,
-                log=lambda s: print("    ", s, flush=True))
-v_old = pd.read_parquet(data / "violations_sample.parquet")
+                until=last, log=lambda s: print("    ", s, flush=True))
 v_new = frames["edges"][frames["edges"].label != "CONFIRMED"]
 old_edges = set(map(tuple, v_old[["contract", "edge_from", "edge_to"]].drop_duplicates().values))
 new_edges = set(map(tuple, v_new[["contract", "edge_from", "edge_to"]].drop_duplicates().values))

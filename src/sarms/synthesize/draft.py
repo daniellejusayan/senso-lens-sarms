@@ -164,14 +164,15 @@ def draft_one(repo_dir, sha=None, rules_dir=None, rms_dir=None, edge=None, pick_
     rules = {r["id"]: r for r in load_rules(rules_dir)}
     bundle = load_bundle(rules_dir)
 
-    before = diff_commit(repo_dir, sha, rules_dir, rms, src)
+    # the draft step works only in its own copy (<repo>.draft), never in the shared <repo>.wt worktree,
+    # so a replay running at the same time cannot change what it sees
+    copy = fresh_copy(repo_dir, sha)
+    before = diff_commit(repo_dir, sha, rules_dir, rms, src, tree=copy)
     v = pick(before, edge)
     rule = rules.get(v["rule_id"])
     before_set = {(r["contract"], r["edge_from"], r["edge_to"]) for r in before["rows"] if r["label"] in VIOLATION_LABELS}
     log(f"target: {v['label']} {v['edge_from']} -> {v['edge_to']}  [{v['rule_id']}]  "
         f"{'direct' if v['direct'] else 'indirect'}{' (acknowledged)' if v['acknowledged'] else ''}")
-
-    copy = fresh_copy(repo_dir, sha)
     roots_paths, _ = pythonpath(copy.resolve(), bundle["session"]["root_packages"], src)
     allowed_roots = set()
     for p in roots_paths:

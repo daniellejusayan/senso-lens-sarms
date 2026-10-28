@@ -36,11 +36,18 @@ def tree_hash(repo_dir, sha, paths):
 
 
 def replay(repo_dir, branch, out_dir, rules_dir=None, every=1, since=None, src=None, rules_asof=False,
-           config=None, repo_label=None, log=print):
+           config=None, repo_label=None, until=None, log=print):
+    """until: stop the chain at this commit (inclusive), e.g. the last commit of a saved replay."""
     repo_dir, out = Path(repo_dir), Path(out_dir)
     (out / "differ").mkdir(parents=True, exist_ok=True)
     ref = resolve_ref(repo_dir, branch or None)
     chain = first_parent(repo_dir, ref, since=since)
+    if until:
+        full = git(repo_dir, "rev-parse", until).strip()
+        pos = [i for i, c in enumerate(chain) if c[1] == full]
+        if not pos:
+            raise SystemExit(f"--until {until[:12]} is not on the first-parent chain of {ref}")
+        chain = chain[:pos[0] + 1]
     sample = [c for n, c in enumerate(chain) if n % every == 0]
     if sample[-1] != chain[-1]:
         sample.append(chain[-1])
@@ -114,9 +121,10 @@ def main():
     ap.add_argument("--src", nargs="*")
     ap.add_argument("--rules-asof", action="store_true", help="recompile the rules at each commit (as-of variant)")
     ap.add_argument("--config")
+    ap.add_argument("--until", help="stop at this commit (inclusive)")
     a = ap.parse_args()
     replay(a.repo_dir, a.branch, a.out_dir, a.rules, a.every, a.since, a.src, a.rules_asof, a.config,
-           log=lambda s: print(s, flush=True))
+           until=a.until, log=lambda s: print(s, flush=True))
 
 
 if __name__ == "__main__":
