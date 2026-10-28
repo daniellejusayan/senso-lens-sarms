@@ -1,0 +1,8 @@
+FILE: kedro/runner/task.py
+<<<<<<< FIND
+from kedro.framework.project import settings
+=======
+from kedro.framework.project import LOGGING, PACKAGE_NAME
+>>>>>>> REPLACE
+
+REASON: Strategy 2: Pass the needed object in as a function parameter so this module no longer imports it; the caller that is allowed to import it supplies it.

@@ -1,0 +1,10 @@
+FILE: kedro/runner/task.py
+<<<<<<< FIND
+from kedro.framework.project import settings
+from kedro.framework.project import LOGGING, PACKAGE_NAME
+from kedro.framework.project import configure_logging, configure_project
+=======
+from kedro.framework.project import settings, LOGGING, PACKAGE_NAME, configure_logging, configure_project
+>>>>>>> REPLACE
+
+REASON: Strategy 3: Move the small shared piece the importer needs into a module both sides may import, and import it from there.

@@ -30,7 +30,7 @@ import time
 from pathlib import Path
 
 from sarms.differ.diff import VIOLATION_LABELS, diff_commit
-from sarms.mining.common import git, resolve_ref
+from sarms.mining.common import git, module_matches, resolve_ref, worktree_path
 from sarms.replay.proxy_lint import pythonpath
 from sarms.rules.compile import load_bundle, load_rules
 from sarms.synthesize import llm
@@ -106,10 +106,11 @@ def template_draft(tree: Path, violation, roots_paths):
             return None, f"cannot locate {mod}"
         line = ln["line_contents"]
         src = p.read_text(encoding="utf-8")
-        m = re.match(r"\s*from\s+\S+\s+import\s+(.+)", line) or re.match(r"\s*import\s+(.+)", line)
+        code = line.split("#", 1)[0]
+        m = re.match(r"\s*from\s+\S+\s+import\s+(.+)", code) or re.match(r"\s*import\s+(.+)", code)
         if not m:
             return None, f"unrecognised import form: {line.strip()}"
-        names = [n.split(" as ")[-1].strip() for n in m.group(1).strip("()").split(",") if n.strip()]
+        names = [n.split(" as ")[-1].strip().split(".")[0] for n in m.group(1).strip("()").split(",") if n.strip()]
         rest = src.replace(line, "", 1)
         used = [n for n in names if re.search(rf"\b{re.escape(n)}\b", rest)]
         if used:
@@ -118,6 +119,27 @@ def template_draft(tree: Path, violation, roots_paths):
     if not blocks:
         return None, "no direct import line to delete (indirect violation)"
     return blocks, "template: the imported names are unused, so the import lines are deleted"
+
+
+IMPORT_LINE = re.compile(r"^\s*(?:from\s+(\S+)\s+import\b|import\s+([\w.]+(?:\s*,\s*[\w.]+)*))")
+
+
+def still_imports(tree: Path, files, forbidden: str):
+    """Lines in `files` that still import `forbidden` or a submodule of it, after an edit:
+    a cheap static check that gives the model a precise line to fix before the Differ runs."""
+    hits = []
+    for rel in files:
+        f = tree / rel
+        if not f.exists():
+            continue
+        for i, line in enumerate(f.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            m = IMPORT_LINE.match(line)
+            if not m:
+                continue
+            mods = [m.group(1)] if m.group(1) else [x.strip().split(" as ")[0] for x in m.group(2).split(",")]
+            if any(mod == forbidden or mod.startswith(forbidden + ".") for mod in mods if mod):
+                hits.append(f"{rel} line {i}: {line.strip()}")
+    return hits
 
 
 def pick(result, edge=None):
@@ -135,7 +157,7 @@ def pick(result, edge=None):
 
 
 def fresh_copy(repo_dir: Path, sha: str):
-    wt = Path(f"{repo_dir}.draft").resolve()
+    wt = worktree_path(repo_dir, "draft").resolve()
     if not wt.exists():
         git(repo_dir, "worktree", "add", "--detach", "-f", str(wt.resolve()), sha)
     else:
@@ -227,6 +249,21 @@ def draft_one(repo_dir, sha=None, rules_dir=None, rms_dir=None, edge=None, pick_
             continue
         patch = git(copy, "diff", "--", ".", check=False) + git(copy, "ls-files", "--others", "--exclude-standard", check=False)
         (out / f"patch{attempt}.diff").write_text(patch)
+        # only files on the importing side of the rule may be checked statically (a file inside the
+        # imported package legitimately imports its own package)
+        touched = sorted({b[0] for b in blocks} | {ln["edge"].split("->")[0].replace(".", "/") + ".py" for ln in v.get("lines", [])})
+        own = [t for t in touched if (copy / t).exists() and any(
+            module_matches(v["edge_from"], ".".join(Path(t).with_suffix("").parts[len(Path(r).parts):]))
+            for r in allowed_roots if t.startswith(r.rsplit("/", 1)[0] + "/" if "/" in r else ""))]
+        left = still_imports(copy, own, v["edge_to"]) if v["direct"] else []
+        if left:
+            att["problems"] = ["the file still imports the forbidden module: " + "; ".join(left)]
+            feedback = ("Your edit left the forbidden import in place:\n  " + "\n  ".join(left) +
+                        "\nEvery import of " + v["edge_to"] + " (and its submodules) must be gone from this file. "
+                        "Importing a different name from the same module does not help.")
+            result["attempts"].append(att)
+            log(f"  attempt {attempt}: still imports {v['edge_to']} ({len(left)} line(s))")
+            continue
         after = diff_commit(repo_dir, sha, rules_dir, None, src, tree=copy, write_files=False)
         after_set = {(r["contract"], r["edge_from"], r["edge_to"]) for r in after["rows"] if r["label"] in VIOLATION_LABELS}
         gone = (v["contract"], v["edge_from"], v["edge_to"]) not in after_set

@@ -22,7 +22,15 @@ from pathlib import Path
 import pandas as pd
 
 from sarms.differ.diff import checkout, label, run_worker
-from sarms.mining.common import IL_FILES, find_il_config, first_parent, git, read_il_options, resolve_ref
+from sarms.mining.common import (
+    IL_FILES,
+    find_il_config,
+    first_parent,
+    git,
+    read_il_options,
+    resolve_ref,
+    worktree_path,
+)
 from sarms.rules.compile import compile_all, load_bundle, load_rules, validate
 
 
@@ -54,7 +62,7 @@ def replay(repo_dir, branch, out_dir, rules_dir=None, every=1, since=None, src=N
     rules_dir = Path(rules_dir) if rules_dir else repo_dir / ".rms" / "rules"
     bundle, rules = load_bundle(rules_dir), load_rules(rules_dir)
     label_repo = repo_label or bundle.get("repo") or repo_dir.name
-    cache = Path(f"{repo_dir}.ilcache").resolve()
+    cache = worktree_path(repo_dir, "ilcache").resolve()
     roots = [r.split(".")[0] for r in bundle["session"]["root_packages"]]
     rows, checks, inds, graphs = [], [], [], []
     prev_hash, prev_res, last_cfg = None, None, None

@@ -35,7 +35,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from sarms.mining.common import git, module_matches, resolve_ref
+from sarms.mining.common import git, module_matches, resolve_ref, worktree_path
 from sarms.replay.proxy_lint import WORKER, pythonpath, uses_missing
 from sarms.rules.compile import load_bundle, load_rules
 
@@ -182,7 +182,7 @@ def checkout(repo_dir, sha, worktree=None):
     bare = git(repo_dir, "rev-parse", "--is-bare-repository").strip() == "true"
     if head == sha and not bare and not worktree:
         return repo_dir
-    wt = Path(worktree) if worktree else Path(f"{repo_dir}.wt")
+    wt = Path(worktree) if worktree else worktree_path(repo_dir, "wt")
     if not wt.exists():
         git(repo_dir, "worktree", "add", "--detach", "-f", str(wt.resolve()), sha)
     else:
@@ -199,7 +199,7 @@ def diff_commit(repo_dir, sha=None, rules_dir=None, out_dir=None, src=None, tree
     rules_dir = Path(rules_dir) if rules_dir else repo_dir / ".rms" / "rules"
     bundle, rules = load_bundle(rules_dir), load_rules(rules_dir)
     tree = Path(tree) if tree else checkout(repo_dir, sha)
-    cache = Path(f"{repo_dir}.ilcache").resolve()
+    cache = worktree_path(repo_dir, "ilcache").resolve()
     t0 = time.time()
     res = run_worker(tree, bundle, cache, src)
     result = label(bundle, rules, res, sha, ts)

@@ -18,7 +18,7 @@ requirements.
 | 1 | Rule compiler `sarms.rules.compile` | contracts at a commit → `.rms/rules/*.yaml` (schema-checked), `acknowledged.yaml`, `contracts.json` | kedro's 4 contracts compile and validate | **done**: 64 rules (36 forbidden, 28 allowed), 0 schema errors |
 | 2 | Differ `sarms.differ` | labels edges CONFIRMED / ADDITIONAL / INVERTED (MISSING with ADR rules); acknowledged = gone under the contracts as written; direct vs indirect; drift indicators (unassigned, cycles, fan-in); SARIF | reproduces the replay's 16 violating edges and 28 episodes | **done**: `tools/check_against_replay.py` → ALL PASS; 1,957 commits in 3 min |
 | 3 | Ledger `sarms.ledger` | DuckDB per `docs/spec/ledger.sql`; episodes; awareness-gap view; hub-growth rows | view gives 92 commits / 156 days | **done**: 96,455 rows; 92 / 156; 4 drops; 9 standing |
-| 4 | Synthesize `sarms.synthesize` | one LLM call drafts FIND/REPLACE edits; applied in a copy; G1 (violation gone, none new) and G3 (tests) re-checked; retry ≤ 3 with the reason; template drafter; everything under `.rms/drafts/` | a valid draft for each kedro fault injection | **built, untested on a real model**: passes end to end with a fake model on a synthetic repo; the first real run is this week's task on the laptop (Ollama) |
+| 4 | Synthesize `sarms.synthesize` | one LLM call drafts FIND/REPLACE edits; applied in a copy; static forbidden-import check, G1 (violation gone, none new) and G3 (tests) re-checked; retry ≤ 3 with the reason; template drafter; everything under `.rms/drafts/` | a valid draft for each kedro fault injection | **built; harness running.** `tools/fault_injection.py` plants pushes (one branch each), `tools/eval_drafts.py` detects and drafts per model. kedro, 28 Oct: detection 8/8, oracle 4/4, template 2/6, controls silent. First real model (qwen2.5-coder 7b) on kedro's standing `runner → framework.project` debt: escalate after 3 tries (112 s), correctly; the model never understood the refactor. Next: the 7b and Gemini Flash on the plants. |
 | 5 | Gate + kernel `sarms.verify`, `sarms.kernel` | G0–G8 in order (static lines first), signed decision record, commit as `sensolens-sarms`, ledger outcome | 10 plants on kedro: 8 corrected, #9 escalated, #10 (drift) recorded only | Weeks 4–5 |
 
 Then widen: all contract types (protected, acyclic_siblings) → checkov, wemake-python-styleguide →
@@ -45,9 +45,12 @@ confirms each compiled rule once).
   mutation testing, the signed record and the commit are step 5.
 - **Bot identity** for step 5: `sensolens-sarms`. The CI attribution check blocks a plain `sarms@`
   author and lets `sensolens-sarms@` through.
-- **Spec v0 limit found:** the ledger's primary key has no `rule_id`, so an edge that breaks two
-  contracts at once keeps one row. None occurs in kedro; to be fixed by a dated amendment to
-  `ledger.sql` before checkov/wemake, where it may.
+- **Spec v0 limits found (for dated amendments):** (1) the ledger's primary key has no `rule_id`,
+  so an edge that breaks two contracts at once keeps one row; kedro's history has none, but a planted
+  `config → io` breaks both the layers and the forbidden contract. (2) `fault-injection.md` names the
+  bot `sarms[bot] <bot@sarms.invalid>`; the team's rule is `sensolens-sarms`. (3) G0 "author's diff
+  byte-identical" cannot hold for the helper kind, where the right fix moves the author's helper; the
+  amendment should say "the author's tests pass unchanged and the author's functions remain callable".
 
 ## What the Differ replay added to the findings
 

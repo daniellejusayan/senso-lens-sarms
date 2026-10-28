@@ -67,3 +67,23 @@ uv run sarms draft data/raw/kedro --rules data/kedro/rms/rules --rms data/kedro/
 The draft step's `--tests` command runs inside the copy, so the copy needs the subject's test
 dependencies installed in the current environment (for kedro: `uv pip install -e data/raw/kedro.draft[test]`
 once; it is heavy). Without `--tests` the draft is judged on G1 only (violation gone, none new).
+
+## Fault injection (docs/spec/fault-injection.md, setup + measurement halves)
+
+```bash
+# plant 8 pushes (2 unused, 2 helper, 2 constant, 2 clean controls), one branch each from the current head
+uv run python tools/fault_injection.py data/raw/kedro --rules data/kedro/rms/rules --out data/kedro/rms/fi --per-kind 2
+
+# detect every plant and draft a fix with each model; one table -> data/kedro/rms/fi/results-<run>.md
+uv run python tools/eval_drafts.py data/kedro/rms/fi/plants.json --models template oracle            # no model needed
+uv run python tools/eval_drafts.py data/kedro/rms/fi/plants.json --models ollama:qwen2.5-coder:latest gemini:gemini-2.5-flash
+# add the planted tests (G3): needs the subject's test deps in the interpreter named here
+uv run python tools/eval_drafts.py data/kedro/rms/fi/plants.json --models ollama:qwen2.5-coder:latest \
+    --tests ".kedro-venv\Scripts\python -m pytest tests/sarms_fi -q -p no:cacheprovider -o addopts=''"
+```
+
+`oracle` is the ideal reply built from the plant record (unused and helper kinds): it proves the
+harness accepts a correct fix; it is not a model. Sandbox result on kedro, 28 Oct: detection 8/8,
+oracle 4/4, template 2/6 (the two unused imports; the rest correctly escalated), controls silent.
+Clean up with `git -C data/raw/kedro worktree remove --force data/raw/kedro.fi` and
+`git -C data/raw/kedro branch -D $(git -C data/raw/kedro branch --list 'sarms/fi-*')`.

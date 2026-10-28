@@ -129,3 +129,38 @@ def test_compile_differ_ledger_and_draft(repo, tmp_path):
     ep = led["episodes"]
     assert len(ep) == 1 and bool(ep.repaired.iloc[0]) and ep.gap_commits.iloc[0] == 1
     assert led["drops"] == 1
+
+
+def test_fault_injection_and_eval_on_the_tiny_repo(repo, tmp_path):
+    """tools/fault_injection.py plants pushes on sibling branches; tools/eval_drafts.py detects every
+    plant, drafts with the template and the oracle, stays silent on the control."""
+    import subprocess
+    import sys
+
+    from sarms.rules.compile import compile_repo
+
+    rules_dir = tmp_path / "rms" / "rules"
+    compile_repo(repo, out_dir=rules_dir, repo_label="app")
+    # the first commit already breaks ui -> db; repair it so every plant is a new violation
+    (repo / "app" / "ui.py").write_text("import os\n\n\ndef show():\n    return os.getcwd()\n")
+    g(repo, "commit", "-qam", "repair")
+    env = {**__import__("os").environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+    root = Path(__file__).resolve().parents[1]
+    p = subprocess.run([sys.executable, str(root / "tools" / "fault_injection.py"), str(repo), "--rules", str(rules_dir),
+                        "--out", str(tmp_path / "rms" / "fi"), "--kinds", "unused,helper,control", "--run-id", "t"],
+                       capture_output=True, text=True, env=env)
+    assert p.returncode == 0, p.stderr
+    plants = json.loads((tmp_path / "rms" / "fi" / "plants.json").read_text())["plants"]
+    assert [x["kind"] for x in plants] == ["unused", "helper", "control"]
+    assert len({x["parent"] for x in plants}) == 1                      # siblings, all from the same head
+    assert g(repo, "log", "-1", "--format=%an", plants[0]["sha"]).strip() == "SARMS Test Author"
+    p = subprocess.run([sys.executable, str(root / "tools" / "eval_drafts.py"), str(tmp_path / "rms" / "fi" / "plants.json"),
+                        "--models", "template", "oracle", "--run-id", "t",
+                        "--tests", f"{sys.executable} -m pytest tests -q -p no:cacheprovider"],
+                       capture_output=True, text=True, env=env)
+    assert p.returncode == 0, p.stderr
+    md = (tmp_path / "rms" / "fi" / "results-t.md").read_text()
+    assert "**Detection: 3/3**" in md
+    assert "**template: 1/2 drafts pass**" in md and "**oracle: 2/2 drafts pass**" in md
+    assert "| silent | silent |" in md
+    assert g(repo, "status", "--short").strip() == ""                   # the subject's own checkout is untouched

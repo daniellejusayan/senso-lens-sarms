@@ -32,6 +32,13 @@ ADR_FILE = re.compile(r"\.(md|rst|adoc|txt)$", re.I)
 ADR_SKIP = re.compile(r"(^|/)(readme|index|template|adr-template|_template)[^/]*$", re.I)
 
 
+def worktree_path(repo_dir, kind: str) -> Path:
+    """<repo>.<kind> next to the clone (wt = replay, draft = the draft step, fi = fault injection).
+    SARMS_WT_SUFFIX (e.g. "-linux") keeps separate worktrees when two operating systems share one
+    clone through a mounted folder, since a worktree's .git file holds an absolute path."""
+    return Path(f"{repo_dir}.{kind}{os.environ.get('SARMS_WT_SUFFIX', '')}")
+
+
 def repo_name(owner_repo: str) -> str:
     return owner_repo.rstrip("/").split("/")[-1]
 

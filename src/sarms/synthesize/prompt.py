@@ -31,7 +31,10 @@ BANNED = """Never do these (they are rejected automatically):
 - change public behaviour, signatures callers rely on, or error messages
 """
 
-FORMAT = """Reply ONLY with one or more blocks in exactly this format, then one REASON line:
+FORMAT = """Reply with ONE line starting with PLAN: (which strategy, which names move where), then one or more
+blocks in exactly this format, then one REASON line:
+
+PLAN: <one line>
 
 FILE: <path relative to the repository root>
 <<<<<<< FIND
@@ -43,8 +46,9 @@ FILE: <path relative to the repository root>
 REASON: <one sentence: which strategy and why>
 
 Rules for the blocks: FIND text must match the file exactly (same indentation, no line numbers);
-a block may delete lines by leaving the REPLACE part empty; to create a new file use an empty FIND.
-No prose, no markdown fences, no explanations outside REASON.
+each violating import line is at a different place in the file, so use ONE block per line and never
+join lines that are not adjacent; a block may delete lines by leaving the REPLACE part empty; to
+create a new file use an empty FIND. No prose, no markdown fences, nothing outside PLAN and REASON.
 """
 
 
@@ -97,8 +101,9 @@ def build(violation, rule, tree: Path, roots_paths, examples=None, feedback=None
         else f"RULE (contract '{violation['contract']}'): {violation['edge_from']} must not import {violation['edge_to']}\n"
     lines = violation.get("lines", [])
     if lines:
-        viol = "THE VIOLATING IMPORT LINES (this is what must go away):\n" + "".join(
-            f"  {ln['edge'].split('->')[0]}  line {ln['line_number']}:  {ln['line_contents'].strip()}\n" for ln in lines)
+        viol = ("THE VIOLATING IMPORT LINES (every one must go; afterwards the file may not import "
+                f"{violation['edge_to']} or any of its submodules at all):\n" + "".join(
+            f"  {ln['edge'].split('->')[0]}  line {ln['line_number']}:  {ln['line_contents'].strip()}\n" for ln in lines))
     else:
         viol = (f"THE VIOLATION: {violation['edge_from']} reaches {violation['edge_to']} through a chain of imports: "
                 + " ; ".join(violation.get("edges", [])) + "\n")
